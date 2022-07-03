@@ -1217,4 +1217,56 @@ describe('props.columns', () => {
       'n-data-table-tr--striped'
     )
   })
+
+  it('should work with `single` prop', async () => {
+    const columns: DataTableColumns = [
+      {
+        type: 'selection',
+        single: true
+      },
+      {
+        title: 'Name',
+        key: 'name'
+      }
+    ]
+    const data = new Array(5).fill(0).map((_, index) => {
+      return {
+        name: index,
+        key: index
+      }
+    })
+
+    const checkedRowKeys = ref([4, 1])
+
+    const handleCheck = (e: any): void => {
+      checkedRowKeys.value = e
+    }
+
+    const wrapper = mount(() => (
+      <NDataTable
+        columns={columns}
+        data={data}
+        onUpdateCheckedRowKeys={handleCheck}
+        checked-row-keys={checkedRowKeys.value}
+      />
+    ))
+
+    const checkboxes = wrapper.findAll('.n-checkbox')
+
+    expect(checkboxes[4].classes()).toContain('n-checkbox--checked')
+    expect(checkboxes[1].classes()).not.toContain('n-checkbox--checked')
+
+    await checkboxes[4].trigger('click')
+    expect(checkboxes[4].classes()).not.toContain('n-checkbox--checked')
+
+    await checkboxes[4].trigger('click')
+    expect(checkboxes[4].classes()).toContain('n-checkbox--checked')
+
+    await checkboxes[0].trigger('click')
+    expect(checkboxes[0].classes()).toContain('n-checkbox--checked')
+
+    await checkboxes[1].trigger('click')
+    expect(checkboxes[1].classes()).toContain('n-checkbox--checked')
+    expect(checkboxes[0].classes()).not.toContain('n-checkbox--checked')
+  })
 })

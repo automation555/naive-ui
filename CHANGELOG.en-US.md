@@ -1,21 +1,5 @@
 # CHANGELOG
 
-## NEXT_VERSION
-
-### Fixes
-
-- Fix `n-data-table` column's `colSpan` doesn't work correctly in virtual scroll mode, closes [#3052](https://github.com/TuSimple/naive-ui/issues/3052).
-- Fix `n-data-table` doesn't show `summary` row in virtual scroll mode, closes [#3202](https://github.com/TuSimple/naive-ui/issues/3202).
-- Fix `n-cascader`'s filter menu doesn't show option path, closes [#3220](https://github.com/TuSimple/naive-ui/issues/3220).
-- Fix `n-cascader`'s `filter` prop may not get correct `path`.
-- Fix `n-date-picker` menu's quarter text isn't same having `type="quarterrange"` and `type="quarter"`, closes [#3217](https://github.com/TuSimple/naive-ui/issues/3217).
-
-## 2.30.8
-
-### Fixes
-
-- Fix `n-select`'s menu transition style, closes [#3211](https://github.com/TuSimple/naive-ui/issues/3211).
-
 ## 2.30.7
 
 ### Fixes
@@ -39,6 +23,7 @@
 - `n-tree-select` adds `render-label` prop, closes [#3197](https://github.com/TuSimple/naive-ui/issues/3197).
 - `n-tree-select` adds `render-tag` prop.
 - `n-notification` adds `titleFontSize`, `metaFontSize`, `descriptionFontSize` theme variables.
+- `n-data-table` adds `single` prop. closes [#3056](https://github.com/TuSimple/naive-ui/issues/3056).
 
 ## 2.30.6
 
