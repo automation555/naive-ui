@@ -1,6 +1,4 @@
-import type { NLocale } from './enUS'
-
-const esAR: NLocale = {
+const esAR = {
   name: 'es-AR',
   global: {
     undo: 'Deshacer',
@@ -45,9 +43,6 @@ const esAR: NLocale = {
     startDatetimePlaceholder: 'Fecha y hora de inicio',
     endDatetimePlaceholder: 'Fecha y hora final',
     monthBeforeYear: true,
-    // FIXME: translation needed
-    startMonthPlaceholder: 'Start Month',
-    endMonthPlaceholder: 'End Month',
     // 0 is Monday / 0 es Lunes
     firstDayOfWeek: 6 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
     today: 'Hoy'
@@ -59,8 +54,8 @@ const esAR: NLocale = {
     clear: 'Limpiar'
   },
   Transfer: {
-    sourceTitle: 'Fuente',
-    targetTitle: 'Objetivo'
+    total: (num: number): string => `Total ${num} items`,
+    selectedTotal: (num: number): string => `Selected ${num} items`
   },
   Empty: {
     description: 'Sin datos'
@@ -110,9 +105,7 @@ const esAR: NLocale = {
     tipClockwise: 'Sentido horario',
     tipZoomOut: 'Alejar',
     tipZoomIn: 'Acercar',
-    tipClose: 'Cerrar (Esc)',
-    // TODO: translation
-    tipOriginalSize: 'Zoom to original size'
+    tipClose: 'Cerrar (Esc)'
   }
 }
 

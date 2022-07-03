@@ -44,9 +44,6 @@ const skSK: NLocale = {
     endDatePlaceholder: 'Dátum ukončenia',
     startDatetimePlaceholder: 'Dátum a čas začiatku',
     endDatetimePlaceholder: 'Dátum a čas ukončenia ',
-    // FIXME: translation needed
-    startMonthPlaceholder: 'Start Month',
-    endMonthPlaceholder: 'End Month',
     monthBeforeYear: true,
     firstDayOfWeek: 6 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
     today: 'Dnes'
@@ -58,8 +55,8 @@ const skSK: NLocale = {
     clear: 'Vyčistiť'
   },
   Transfer: {
-    sourceTitle: 'Zdroj',
-    targetTitle: 'Cieľ'
+    total: (num: number): string => `Total ${num} items`,
+    selectedTotal: (num: number): string => `Selected ${num} items`
   },
   Empty: {
     description: 'Žiadne dáta'
@@ -110,9 +107,7 @@ const skSK: NLocale = {
     tipClockwise: 'V smere hodinových ručičiek',
     tipZoomOut: 'Oddialiť',
     tipZoomIn: 'Priblížiť',
-    tipClose: 'Zavrieť (Esc)',
-    // TODO: translation
-    tipOriginalSize: 'Zoom to original size'
+    tipClose: 'Zavrieť (Esc)'
   }
 }
 

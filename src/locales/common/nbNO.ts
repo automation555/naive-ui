@@ -45,9 +45,6 @@ const nbNO: NLocale = {
     endDatePlaceholder: 'Sluttdato',
     startDatetimePlaceholder: 'Startdato og -tid',
     endDatetimePlaceholder: 'Sluttdato og -tid',
-    // FIXME: translation needed
-    startMonthPlaceholder: 'Start Month',
-    endMonthPlaceholder: 'End Month',
     monthBeforeYear: true,
     firstDayOfWeek: 0 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
     today: 'I dag'
@@ -59,8 +56,8 @@ const nbNO: NLocale = {
     clear: 'Tøm'
   },
   Transfer: {
-    sourceTitle: 'Kilde',
-    targetTitle: 'Mål'
+    total: (num: number): string => `Total ${num} items`,
+    selectedTotal: (num: number): string => `Selected ${num} items`
   },
   Empty: {
     description: 'Ingen data'
@@ -103,6 +100,7 @@ const nbNO: NLocale = {
     export: 'Eksporter',
     restore: 'Nullstill til standardvalg'
   },
+  // TODO: translation
   Image: {
     tipPrevious: 'Previous picture (←)',
     tipNext: 'Next picture (→)',
@@ -110,9 +108,7 @@ const nbNO: NLocale = {
     tipClockwise: 'Clockwise',
     tipZoomOut: 'Zoom out',
     tipZoomIn: 'Zoom in',
-    tipClose: 'Close (Esc)',
-    // TODO: translation
-    tipOriginalSize: 'Zoom to original size'
+    tipClose: 'Close (Esc)'
   }
 }
 

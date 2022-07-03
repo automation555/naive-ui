@@ -44,8 +44,6 @@ const zhTW: NLocale = {
     endDatePlaceholder: '結束日期',
     startDatetimePlaceholder: '開始日期時間',
     endDatetimePlaceholder: '結束日期時間',
-    startMonthPlaceholder: '開始月份',
-    endMonthPlaceholder: '結束月份',
     monthBeforeYear: false,
     firstDayOfWeek: 0,
     today: '今天'
@@ -57,8 +55,8 @@ const zhTW: NLocale = {
     clear: '重置'
   },
   Transfer: {
-    sourceTitle: '源項',
-    targetTitle: '目標項'
+    total: (num: number): string => `共 ${num} 項`,
+    selectedTotal: (num: number): string => `已選 ${num} 項`
   },
   Empty: {
     description: '無數據'
@@ -109,9 +107,7 @@ const zhTW: NLocale = {
     tipClockwise: '向右旋转',
     tipZoomOut: '缩小',
     tipZoomIn: '放大',
-    tipClose: '关闭（Esc）',
-    // TODO: translation
-    tipOriginalSize: '缩放到原始尺寸'
+    tipClose: '关闭（Esc）'
   }
 }
 

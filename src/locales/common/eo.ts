@@ -1,6 +1,4 @@
-import type { NLocale } from './enUS'
-
-const eo: NLocale = {
+const eo = {
   name: 'eo',
   global: {
     undo: 'Malfari',
@@ -44,9 +42,6 @@ const eo: NLocale = {
     endDatePlaceholder: 'Fina dato',
     startDatetimePlaceholder: 'Komencaj dato kaj tempo',
     endDatetimePlaceholder: 'Finaj dato kaj tempo',
-    // FIXME: translation needed
-    startMonthPlaceholder: 'Start Month',
-    endMonthPlaceholder: 'End Month',
     monthBeforeYear: true,
     firstDayOfWeek: 0 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
     today: 'Hodiaŭ'
@@ -58,8 +53,8 @@ const eo: NLocale = {
     clear: 'Malplenigi'
   },
   Transfer: {
-    sourceTitle: 'Fonto',
-    targetTitle: 'Celo'
+    total: (num: number): string => `Total ${num} items`,
+    selectedTotal: (num: number): string => `Selected ${num} items`
   },
   Empty: {
     description: 'Neniu datumo'
@@ -109,8 +104,7 @@ const eo: NLocale = {
     tipClockwise: 'Dekstrume',
     tipZoomOut: 'Malzomi',
     tipZoomIn: 'Zomi',
-    tipClose: 'Fermi (Esc)',
-    tipOriginalSize: 'Zoom to original size'
+    tipClose: 'Fermi (Esc)'
   }
 }
 

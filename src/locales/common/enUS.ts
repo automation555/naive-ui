@@ -42,8 +42,6 @@ const enUS = {
     endDatePlaceholder: 'End Date',
     startDatetimePlaceholder: 'Start Date and Time',
     endDatetimePlaceholder: 'End Date and Time',
-    startMonthPlaceholder: 'Start Month',
-    endMonthPlaceholder: 'End Month',
     monthBeforeYear: true,
     firstDayOfWeek: 6 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
     today: 'Today'
@@ -55,8 +53,8 @@ const enUS = {
     clear: 'Clear'
   },
   Transfer: {
-    sourceTitle: 'Source',
-    targetTitle: 'Target'
+    total: (num: number): string => `Total ${num} items`,
+    selectedTotal: (num: number): string => `Selected ${num} items`
   },
   Empty: {
     description: 'No Data'
@@ -99,6 +97,7 @@ const enUS = {
     export: 'Export',
     restore: 'Reset to Default'
   },
+  // TODO: translation
   Image: {
     tipPrevious: 'Previous picture (←)',
     tipNext: 'Next picture (→)',
@@ -106,9 +105,7 @@ const enUS = {
     tipClockwise: 'Clockwise',
     tipZoomOut: 'Zoom out',
     tipZoomIn: 'Zoom in',
-    tipClose: 'Close (Esc)',
-    // TODO: translation
-    tipOriginalSize: 'Zoom to original size'
+    tipClose: 'Close (Esc)'
   }
 }
 
