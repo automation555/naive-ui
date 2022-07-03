@@ -93,6 +93,8 @@ describe('n-dialog', () => {
   })
 
   it('maskClosable', async () => {
+    const mousedownEvent = new MouseEvent('mousedown', { bubbles: true })
+    const mouseupEvent = new MouseEvent('mouseup', { bubbles: true })
     const Test = defineComponent({
       setup () {
         const dialog = useDialog()
@@ -109,9 +111,8 @@ describe('n-dialog', () => {
     const wrapper = mount(() => (
       <Provider>{{ default: () => <Test /> }}</Provider>
     ))
-    document
-      .querySelector('.n-modal-mask')
-      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    document.body.dispatchEvent(mousedownEvent)
+    document.body.dispatchEvent(mouseupEvent)
     await nextTick(() => {
       expect(document.querySelector('.n-dialog')).not.toBeNull()
     })
@@ -119,7 +120,9 @@ describe('n-dialog', () => {
   })
 
   it('onMaskClick', async () => {
-    const onMaskClick = jest.fn()
+    const onMaskClick = vi.fn()
+    const mousedownEvent = new MouseEvent('mousedown', { bubbles: true })
+    const mouseupEvent = new MouseEvent('mouseup', { bubbles: true })
     const Test = defineComponent({
       setup () {
         const dialog = useDialog()
@@ -136,9 +139,8 @@ describe('n-dialog', () => {
     const wrapper = await mount(() => (
       <Provider>{{ default: () => <Test /> }}</Provider>
     ))
-    document
-      .querySelector('.n-modal-mask')
-      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    document.body.dispatchEvent(mousedownEvent)
+    document.body.dispatchEvent(mouseupEvent)
     expect(onMaskClick).toHaveBeenCalled()
     wrapper.unmount()
   })
