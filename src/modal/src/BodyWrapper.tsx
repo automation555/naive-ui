@@ -14,10 +14,7 @@ import {
   VNode,
   ComponentPublicInstance,
   mergeProps,
-  cloneVNode,
-  computed,
-  DirectiveArguments,
-  VNodeChild
+  cloneVNode
 } from 'vue'
 import { clickoutside } from 'vdirs'
 import { VFocusTrap } from 'vueuc'
@@ -28,7 +25,7 @@ import { drawerBodyInjectionKey } from '../../drawer/src/interface'
 import { popoverBodyInjectionKey } from '../../popover/src/interface'
 import { NScrollbar, ScrollbarInst } from '../../_internal'
 import { NCard } from '../../card'
-import { getFirstSlotVNode, keep, useLockHtmlScroll, warn } from '../../_utils'
+import { getFirstSlotVNode, keep, warn } from '../../_utils'
 import { modalBodyInjectionKey, modalInjectionKey } from './interface'
 import { presetProps } from './presetProps'
 
@@ -53,11 +50,12 @@ export default defineComponent({
       type: Boolean,
       default: true
     },
-    blockScroll: Boolean,
     ...presetProps,
-    renderMask: Function as PropType<() => VNodeChild>,
     // events
-    onClickoutside: Function as PropType<(e: MouseEvent) => void>,
+    onClickoutside: {
+      type: Function,
+      required: true
+    },
     onBeforeLeave: {
       type: Function,
       required: true
@@ -79,7 +77,7 @@ export default defineComponent({
       required: true
     },
     onAfterEnter: Function as PropType<() => void>,
-    onEsc: Function as PropType<(e: KeyboardEvent) => void>
+    onEsc: Function as PropType<() => void>
   },
   setup (props) {
     const bodyRef = ref<HTMLElement | ComponentPublicInstance | null>(null)
@@ -90,7 +88,6 @@ export default defineComponent({
     watch(toRef(props, 'show'), (value) => {
       if (value) displayedRef.value = true
     })
-    useLockHtmlScroll(computed(() => props.blockScroll && displayedRef.value))
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const NModal = inject(modalInjectionKey)!
     function styleTransformOrigin (): string {
@@ -132,7 +129,6 @@ export default defineComponent({
       })
     }
     function handleBeforeLeave (el: HTMLElement): void {
-      el.style.transformOrigin = styleTransformOrigin()
       props.onBeforeLeave()
     }
     function handleAfterLeave (): void {
@@ -153,17 +149,9 @@ export default defineComponent({
     function handlePositiveClick (): void {
       props.onPositiveClick()
     }
-    const childNodeRef = ref<VNode | null>(null)
-    watch(childNodeRef, (node) => {
-      if (node) {
-        void nextTick(() => {
-          const el = node.el as HTMLElement | null
-          if (el && bodyRef.value !== el) {
-            bodyRef.value = el
-          }
-        })
-      }
-    })
+    function handleClickOutside (e: MouseEvent): void {
+      props.onClickoutside(e)
+    }
     provide(modalBodyInjectionKey, bodyRef)
     provide(drawerBodyInjectionKey, null)
     provide(popoverBodyInjectionKey, null)
@@ -175,7 +163,7 @@ export default defineComponent({
       bodyRef,
       scrollbarRef,
       displayed: displayedRef,
-      childNodeRef,
+      handleClickOutside,
       handlePositiveClick,
       handleNegativeClick,
       handleCloseClick,
@@ -191,6 +179,7 @@ export default defineComponent({
       handleEnter,
       handleAfterLeave,
       handleBeforeLeave,
+      handleClickOutside,
       preset,
       mergedClsPrefix
     } = this
@@ -220,8 +209,7 @@ export default defineComponent({
               contentClass={`${mergedClsPrefix}-modal-scroll-content`}
             >
               {{
-                default: () => [
-                  this.renderMask?.(),
+                default: () => (
                   <VFocusTrap
                     disabled={!this.trapFocus}
                     active={this.show}
@@ -239,20 +227,8 @@ export default defineComponent({
                           onBeforeLeave={handleBeforeLeave as any}
                         >
                           {{
-                            default: () => {
-                              const dirs: DirectiveArguments = [
-                                [vShow, this.show]
-                              ]
-                              const { onClickoutside } = this
-                              if (onClickoutside) {
-                                dirs.push([
-                                  clickoutside,
-                                  this.onClickoutside,
-                                  undefined as unknown as string,
-                                  { capture: true }
-                                ])
-                              }
-                              return withDirectives(
+                            default: () =>
+                              withDirectives(
                                 (this.preset === 'confirm' ||
                                 this.preset === 'dialog' ? (
                                   <NDialog
@@ -290,17 +266,19 @@ export default defineComponent({
                                     {$slots}
                                   </NCard>
                                     ) : (
-                                      (this.childNodeRef = childNode)
+                                      childNode
                                     )) as any,
-                                dirs
+                                [
+                                  [vShow, this.show],
+                                  [clickoutside, handleClickOutside]
+                                ]
                               )
-                            }
                           }}
                         </Transition>
                       )
                     }}
                   </VFocusTrap>
-                ]
+                )
               }}
             </NScrollbar>
           </div>,

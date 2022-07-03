@@ -1,5 +1,4 @@
 import { PropType, VNodeChild } from 'vue'
-import type { ButtonProps } from '../../button'
 import type { ExtractPublicPropTypes } from '../../_utils'
 import { keysOf } from '../../_utils'
 import type { IconPlacement } from './interface'
@@ -17,10 +16,9 @@ const dialogProps = {
     type: Boolean,
     default: true
   },
+  draggable: Boolean,
   negativeText: String,
   positiveText: String,
-  positiveButtonProps: Object as PropType<ButtonProps>,
-  negativeButtonProps: Object as PropType<ButtonProps>,
   content: [String, Function] as PropType<string | (() => VNodeChild)>,
   action: Function as PropType<() => VNodeChild>,
   showIcon: {
