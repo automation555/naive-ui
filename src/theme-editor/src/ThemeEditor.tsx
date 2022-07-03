@@ -2,14 +2,14 @@ import {
   h,
   computed,
   defineComponent,
+  renderSlot,
   ref,
   Fragment,
   toRaw,
   watch,
-  inject
+  VNodeChild
 } from 'vue'
 import { cloneDeep, merge } from 'lodash-es'
-import { configProviderInjectionKey } from '../../config-provider/src/context'
 import { lightTheme } from '../../themes/light'
 import {
   GlobalTheme,
@@ -17,16 +17,17 @@ import {
   NConfigProvider
 } from '../../config-provider'
 import { NPopover } from '../../popover'
+import { NScrollbar } from '../../scrollbar'
 import { NCollapse, NCollapseItem } from '../../collapse'
 import { NInput } from '../../input'
 import { NSpace } from '../../space'
-import { useLocale } from '../../_mixins'
+import { useConfig, useLocale } from '../../_mixins'
 import { NElement } from '../../element'
 import { NDivider } from '../../divider'
 import { NButton } from '../../button'
 import { NColorPicker } from '../../color-picker'
 import { NEmpty } from '../../empty'
-import { lockHtmlScrollRightCompensationRef } from '../../_utils'
+import { isEmptyObj, judgePeersHasVarName } from './utils'
 
 const ColorWandIcon = (
   <svg
@@ -54,19 +55,13 @@ const ColorWandIcon = (
   </svg>
 )
 
-// button colorOpacitySecondary var is not color
-const showColorPicker = (key: string): boolean => {
-  if (key.includes('pacity')) return false
-  if (key.includes('color') || key.includes('Color')) return true
-  return false
-}
-
 export default defineComponent({
   name: 'ThemeEditor',
   inheritAttrs: false,
   setup () {
     const fileInputRef = ref<HTMLInputElement | null>(null)
-    const NConfigProvider = inject(configProviderInjectionKey, null)
+    const { NConfigProvider } = useConfig()
+    const localeRef = useLocale('ThemeEditor').localeRef
     const theme = computed(() => {
       const mergedTheme: GlobalTheme =
         NConfigProvider?.mergedThemeRef.value || lightTheme
@@ -82,13 +77,22 @@ export default defineComponent({
         common
       }
       for (const key of Object.keys(lightTheme) as Array<
-      Exclude<keyof typeof lightTheme, 'name'>
+      keyof typeof lightTheme
       >) {
         if (key === 'common') continue
         ;(overrides as any)[key] = (mergedTheme[key]?.self?.(common) ||
           lightTheme[key].self?.(common)) as any
         // There (last line) we must use as any, nor ts 2590 will be raised since the union
         // is too complex
+        if (mergedTheme[key]?.peers && (overrides as any)[key]) {
+          for (const peersKey of Object.keys(mergedTheme[key]?.peers) as Array<
+          keyof typeof lightTheme
+          >) {
+            if (!(overrides as any)[key].peers) (overrides as any)[key].peers = {}
+            ;(overrides as any)[key].peers[peersKey] = (mergedTheme[key]?.peers[peersKey]?.self?.(common) ||
+          lightTheme[key]?.peers[peersKey]?.self?.(common))
+          }
+        }
         if (mergedThemeOverrides && (overrides as any)[key]) {
           merge((overrides as any)[key], mergedThemeOverrides[key])
         }
@@ -109,22 +113,185 @@ export default defineComponent({
     const compNamePatternRef = ref('')
     const tempVarNamePatternRef = ref('')
     const tempCompNamePatternRef = ref('')
+    function renderCollapseItem (varKeys: string[], componentTheme: Record<string, string>, themeKey: string, parentComp?: string, isPeers = true): VNodeChild {
+      return (
+        <NCollapseItem
+          title={themeKey}
+          name={themeKey}
+          style={{ marginLeft: 0 }}
+        >
+          {{
+            default: () => {
+              return (
+                <NSpace vertical>
+                  {{
+                    default: () =>
+                      varKeys.map((varKey) => {
+                        if (varKey === 'peers') {
+                          const renderPeers = Object.keys(componentTheme[varKey]).map(key => {
+                            // may componentTheme[varKey][key] is undefined
+                            if (!componentTheme[varKey][key as unknown as number]) return null
+                            return renderCollapseItem(Object.keys(componentTheme[varKey][key as unknown as number]), componentTheme[varKey][key as unknown as number] as unknown as Record<string, string>, key, themeKey, true)
+                          })
+                          return renderPeers
+                        }
+                        return [
+                          <div
+                            key={`${varKey}Label`}
+                          >
+                            {varKey}
+                          </div>,
+                          varKey.includes(
+                            'color'
+                          ) ||
+                          varKey.includes(
+                            'Color'
+                          ) ? (
+                            <NColorPicker
+                              key={varKey}
+                              modes={[
+                                'rgb',
+                                'hex'
+                              ]}
+                              value={
+                                parentComp ? tempOverridesRef.value?.[parentComp]?.peers[
+                                  themeKey
+                                ]?.[varKey] : tempOverridesRef.value?.[
+                                  themeKey
+                                ]?.[varKey] ||
+                                componentTheme[
+                                  varKey
+                                ]
+                              }
+                              onComplete={
+                                applyTempOverrides
+                              }
+                              onUpdateValue={(
+                                value: string
+                              ) => {
+                                setTempOverrides(
+                                  themeKey,
+                                  varKey,
+                                  value,
+                                  isPeers,
+                                  parentComp
+                                )
+                              }}
+                            >
+                              {{
+                                action: () => (
+                                  <NButton
+                                    size="small"
+                                    disabled={
+                                      componentTheme[
+                                        varKey
+                                      ] ===
+                                      parentComp ? tempOverridesRef.value?.[parentComp]?.peers[
+                                          themeKey
+                                        ]?.[varKey] : tempOverridesRef.value?.[
+                                          themeKey
+                                        ]?.[varKey]
+                                    }
+                                    onClick={() => {
+                                      setTempOverrides(
+                                        themeKey,
+                                        varKey,
+                                        componentTheme[
+                                          varKey
+                                        ],
+                                        isPeers,
+                                        parentComp
+                                      )
+                                      applyTempOverrides()
+                                    }}
+                                  >
+                                    {{
+                                      default:
+                                        () =>
+                                          localeRef.value.restore
+                                    }}
+                                  </NButton>
+                                )
+                              }}
+                            </NColorPicker>
+                              ) : (
+                            <NInput
+                              key={varKey}
+                              onChange={
+                                applyTempOverrides
+                              }
+                              onUpdateValue={(
+                                value: string
+                              ) => {
+                                setTempOverrides(
+                                  themeKey,
+                                  varKey,
+                                  value,
+                                  isPeers,
+                                  parentComp
+                                )
+                              }}
+                              value={
+                                parentComp ? tempOverridesRef.value?.[parentComp]?.peers[
+                                  themeKey
+                                ]?.[varKey] : tempOverridesRef.value?.[
+                                  themeKey
+                                ]?.[varKey] || ''
+                              }
+                              placeholder={
+                                componentTheme[
+                                  varKey
+                                ]
+                              }
+                            />
+                              )
+                        ]
+                      })
+                  }}
+                </NSpace>
+              )
+            }
+          }}
+        </NCollapseItem>
+      )
+    }
     function applyTempOverrides (): void {
       overridesRef.value = cloneDeep(toRaw(tempOverridesRef.value))
     }
     function setTempOverrides (
       compName: string,
       varName: string,
-      value: string
+      value: string,
+      isPeers = false,
+      parentCompName?: string
     ): void {
       const { value: tempOverrides } = tempOverridesRef
-      if (!(compName in tempOverrides)) tempOverrides[compName] = {}
-      const compOverrides = tempOverrides[compName]
-      if (value) {
-        compOverrides[varName] = value
+      let parentCompOverridesPeers
+      let compOverrides
+      if (parentCompName && isPeers) {
+        if (!(parentCompName in tempOverrides)) tempOverrides[parentCompName] = {}
+        if (!tempOverrides[parentCompName].peers) tempOverrides[parentCompName].peers = {}
+        parentCompOverridesPeers = tempOverrides[parentCompName].peers
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete compOverrides[varName]
+        if (!(compName in tempOverrides)) tempOverrides[compName] = {}
+        compOverrides = tempOverrides[compName]
+      }
+      if (value) {
+        if (isPeers && parentCompName) {
+          if (!parentCompOverridesPeers[compName]) parentCompOverridesPeers[compName] = {}
+          parentCompOverridesPeers[compName][varName] = value
+        } else {
+          compOverrides[varName] = value
+        }
+      } else {
+        if (isPeers && parentCompName) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          if (parentCompOverridesPeers?.[compName]?.[varName]) delete parentCompOverridesPeers[compName][varName]
+          if (parentCompOverridesPeers?.[compName] && isEmptyObj(parentCompOverridesPeers?.[compName])) delete parentCompOverridesPeers?.[compName]
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete compOverrides[varName]
+        }
       }
     }
     function handleClearAllClick (): void {
@@ -172,7 +339,7 @@ export default defineComponent({
       localStorage['naive-ui-theme-overrides'] = JSON.stringify(value)
     })
     return {
-      locale: useLocale('ThemeEditor').localeRef,
+      locale: localeRef,
       themeCommonDefault: themeCommonDefaultRef,
       theme,
       showPanel: showPanelRef,
@@ -188,7 +355,8 @@ export default defineComponent({
       handleClearAllClick,
       handleExportClick,
       handleImportClick,
-      handleInputFileChange
+      handleInputFileChange,
+      renderCollapseItem
     }
   },
   render () {
@@ -197,8 +365,6 @@ export default defineComponent({
         {{
           default: () => [
             <NPopover
-              scrollable
-              arrowPointToCenter
               trigger="manual"
               show={this.showPanel}
               displayDirective="show"
@@ -217,7 +383,7 @@ export default defineComponent({
                         position: 'fixed',
                         zIndex: 10,
                         bottom: '40px',
-                        right: `calc(40px + ${lockHtmlScrollRightCompensationRef.value})`,
+                        right: '40px',
                         width: '44px',
                         height: '44px',
                         fontSize: '26px',
@@ -227,17 +393,13 @@ export default defineComponent({
                         borderRadius: '50%',
                         backgroundColor: 'var(--popover-color)',
                         color: 'var(--text-color-2)',
-                        transition:
-                          'color .3s var(--cubic-bezier-ease-in-out), background-color .3s var(--cubic-bezier-ease-in-out), box-shadow .3s var(--cubic-bezier-ease-in-out)',
+                        transition: 'all .3s var(--cubic-bezier-ease-in-out)',
                         boxShadow: '0 2px 8px 0px rgba(0, 0, 0, .12)',
                         cursor: 'pointer'
                       },
                       this.$attrs.style
                     ]}
-                    // We use ts-ignore for vue-tsc, since it seems to patch
-                    // native event for vue components
-                    // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
-                    // @ts-ignore
+                    // @ts-expect-error
                     onClick={() => {
                       this.showPanel = !this.showPanel
                     }}
@@ -246,265 +408,171 @@ export default defineComponent({
                   </NElement>
                 ),
                 default: () => (
-                  <>
-                    <input
-                      type="file"
-                      ref="fileInputRef"
-                      style={{
-                        display: 'block',
-                        width: 0,
-                        height: 0,
-                        visibility: 'hidden'
-                      }}
-                      onChange={this.handleInputFileChange}
-                    />
-                    <NSpace vertical>
-                      {{
-                        default: () => (
-                          <>
-                            <div
-                              style={{
-                                marginBottom: '8px',
-                                fontSize: '18px',
-                                fontWeight: 500
-                              }}
-                            >
-                              {this.locale.title}
-                            </div>
-                            {this.locale.filterCompName}
-                            <NInput
-                              onChange={() => {
-                                this.compNamePattern = this.tempCompNamePattern
-                              }}
-                              onInput={(value: string) => {
-                                this.tempCompNamePattern = value
-                              }}
-                              value={this.tempCompNamePattern}
-                              placeholder={this.locale.filterCompName}
-                            />
-                            {this.locale.filterVarName}
-                            <NInput
-                              onChange={(value: string) => {
-                                this.varNamePattern = value
-                              }}
-                              onInput={(value: string) => {
-                                this.tempVarNamePattern = value
-                              }}
-                              value={this.tempVarNamePattern}
-                              placeholder={this.locale.filterVarName}
-                            />
-                            <NButton
-                              size="small"
-                              onClick={() => {
-                                this.compNamePattern = ''
-                                this.varNamePattern = ''
-                                this.tempCompNamePattern = ''
-                                this.tempVarNamePattern = ''
-                              }}
-                              block
-                            >
-                              {{ default: () => this.locale.clearSearch }}
-                            </NButton>
-                            <NButton
-                              size="small"
-                              onClick={this.handleClearAllClick}
-                              block
-                            >
-                              {{
-                                default: () => this.locale.clearAllVars
-                              }}
-                            </NButton>
-                            <NSpace itemStyle={{ flex: 1 }}>
-                              {{
-                                default: () => (
-                                  <>
-                                    <NButton
-                                      block
-                                      size="small"
-                                      onClick={this.handleImportClick}
-                                    >
-                                      {{
-                                        default: () => this.locale.import
-                                      }}
-                                    </NButton>
-                                    <NButton
-                                      block
-                                      size="small"
-                                      onClick={this.handleExportClick}
-                                    >
-                                      {{
-                                        default: () => this.locale.export
-                                      }}
-                                    </NButton>
-                                  </>
-                                )
-                              }}
-                            </NSpace>
-                          </>
-                        )
-                      }}
-                    </NSpace>
-                    <NDivider />
-                    <NCollapse>
-                      {{
-                        default: () => {
-                          const { theme, compNamePattern, varNamePattern } =
-                            this
-                          const themeKeys = Object.keys(theme)
-                          const compNamePatternLower =
-                            compNamePattern.toLowerCase()
-                          const varNamePatternLower =
-                            varNamePattern.toLowerCase()
-                          let filteredItemsCount = 0
-                          const collapsedItems = themeKeys
-                            .filter((themeKey) => {
-                              return themeKey
-                                .toLowerCase()
-                                .includes(compNamePatternLower)
-                            })
-                            .map((themeKey) => {
-                              const componentTheme:
-                              | Record<string, string>
-                              | undefined =
-                                themeKey === 'common'
-                                  ? this.themeCommonDefault
-                                  : (theme as any)[themeKey]
-                              if (componentTheme === undefined) {
-                                return null
-                              }
-                              const varKeys = Object.keys(
-                                componentTheme
-                              ).filter((key) => {
-                                return (
-                                  key !== 'name' &&
-                                  key
-                                    .toLowerCase()
-                                    .includes(varNamePatternLower)
-                                )
-                              })
-                              if (!varKeys.length) {
-                                return null
-                              }
-                              filteredItemsCount += 1
-                              return (
-                                <NCollapseItem title={themeKey} name={themeKey}>
-                                  {{
-                                    default: () => {
-                                      return (
-                                        <NSpace vertical>
-                                          {{
-                                            default: () =>
-                                              varKeys.map((varKey) => {
-                                                return [
-                                                  <div
-                                                    key={`${varKey}Label`}
-                                                    style={{
-                                                      wordBreak: 'break-word'
-                                                    }}
-                                                  >
-                                                    {varKey}
-                                                  </div>,
-                                                  showColorPicker(varKey) ? (
-                                                    <NColorPicker
-                                                      key={varKey}
-                                                      modes={['rgb', 'hex']}
-                                                      value={
-                                                        this.tempOverrides?.[
-                                                          themeKey
-                                                        ]?.[varKey] ||
-                                                        componentTheme[varKey]
-                                                      }
-                                                      onComplete={
-                                                        this.applyTempOverrides
-                                                      }
-                                                      onUpdateValue={(
-                                                        value: string
-                                                      ) => {
-                                                        this.setTempOverrides(
-                                                          themeKey,
-                                                          varKey,
-                                                          value
-                                                        )
-                                                      }}
-                                                    >
-                                                      {{
-                                                        action: () => (
-                                                          <NButton
-                                                            size="small"
-                                                            disabled={
-                                                              componentTheme[
-                                                                varKey
-                                                              ] ===
-                                                              this
-                                                                .tempOverrides?.[
-                                                                  themeKey
-                                                                ]?.[varKey]
-                                                            }
-                                                            onClick={() => {
-                                                              this.setTempOverrides(
-                                                                themeKey,
-                                                                varKey,
-                                                                componentTheme[
-                                                                  varKey
-                                                                ]
-                                                              )
-                                                              this.applyTempOverrides()
-                                                            }}
-                                                          >
-                                                            {{
-                                                              default: () =>
-                                                                this.locale
-                                                                  .restore
-                                                            }}
-                                                          </NButton>
-                                                        )
-                                                      }}
-                                                    </NColorPicker>
-                                                  ) : (
-                                                    <NInput
-                                                      key={varKey}
-                                                      onChange={
-                                                        this.applyTempOverrides
-                                                      }
-                                                      onUpdateValue={(
-                                                        value: string
-                                                      ) => {
-                                                        this.setTempOverrides(
-                                                          themeKey,
-                                                          varKey,
-                                                          value
-                                                        )
-                                                      }}
-                                                      value={
-                                                        this.tempOverrides?.[
-                                                          themeKey
-                                                        ]?.[varKey] || ''
-                                                      }
-                                                      placeholder={
-                                                        componentTheme[varKey]
-                                                      }
-                                                    />
-                                                  )
-                                                ]
-                                              })
-                                          }}
-                                        </NSpace>
+                  <NScrollbar contentStyle={{ padding: '8px 14px' }}>
+                    {{
+                      default: () => (
+                        <>
+                          <NSpace vertical>
+                            {{
+                              default: () => (
+                                <>
+                                  <input
+                                    type="file"
+                                    ref="fileInputRef"
+                                    style={{
+                                      display: 'block',
+                                      width: 0,
+                                      height: 0,
+                                      visibility: 'hidden'
+                                    }}
+                                    onChange={this.handleInputFileChange}
+                                  />
+                                  <div
+                                    style={{
+                                      marginBottom: '8px',
+                                      fontSize: '18px',
+                                      fontWeight: 500
+                                    }}
+                                  >
+                                    {this.locale.title}
+                                  </div>
+                                  {this.locale.filterCompName}
+                                  <NInput
+                                    onChange={() => {
+                                      this.compNamePattern =
+                                        this.tempCompNamePattern
+                                    }}
+                                    onInput={(value: string) => {
+                                      this.tempCompNamePattern = value
+                                    }}
+                                    value={this.tempCompNamePattern}
+                                    placeholder={this.locale.filterCompName}
+                                  />
+                                  {this.locale.filterVarName}
+                                  <NInput
+                                    onChange={(value: string) => {
+                                      this.varNamePattern = value
+                                    }}
+                                    onInput={(value: string) => {
+                                      this.tempVarNamePattern = value
+                                    }}
+                                    value={this.tempVarNamePattern}
+                                    placeholder={this.locale.filterVarName}
+                                  />
+                                  <NButton
+                                    size="small"
+                                    onClick={() => {
+                                      this.compNamePattern = ''
+                                      this.varNamePattern = ''
+                                      this.tempCompNamePattern = ''
+                                      this.tempVarNamePattern = ''
+                                    }}
+                                    block
+                                  >
+                                    {{ default: () => this.locale.clearSearch }}
+                                  </NButton>
+                                  <NButton
+                                    size="small"
+                                    onClick={this.handleClearAllClick}
+                                    block
+                                  >
+                                    {{
+                                      default: () => this.locale.clearAllVars
+                                    }}
+                                  </NButton>
+                                  <NSpace itemStyle={{ flex: 1 }}>
+                                    {{
+                                      default: () => (
+                                        <>
+                                          <NButton
+                                            block
+                                            size="small"
+                                            onClick={this.handleImportClick}
+                                          >
+                                            {{
+                                              default: () => this.locale.import
+                                            }}
+                                          </NButton>
+                                          <NButton
+                                            block
+                                            size="small"
+                                            onClick={this.handleExportClick}
+                                          >
+                                            {{
+                                              default: () => this.locale.export
+                                            }}
+                                          </NButton>
+                                        </>
                                       )
-                                    }
-                                  }}
-                                </NCollapseItem>
+                                    }}
+                                  </NSpace>
+                                </>
                               )
-                            })
-                          if (!filteredItemsCount) return <NEmpty />
-                          return collapsedItems
-                        }
-                      }}
-                    </NCollapse>
-                  </>
+                            }}
+                          </NSpace>
+                          <NDivider />
+                          <NCollapse>
+                            {{
+                              default: () => {
+                                const {
+                                  theme,
+                                  compNamePattern,
+                                  varNamePattern
+                                } = this
+                                const themeKeys = Object.keys(theme)
+                                const compNamePatternLower =
+                                  compNamePattern.toLowerCase()
+                                const varNamePatternLower =
+                                  varNamePattern.toLowerCase()
+                                let filteredItemsCount = 0
+                                const collapsedItems = themeKeys
+                                  .filter((themeKey) => {
+                                    return themeKey
+                                      .toLowerCase()
+                                      .includes(compNamePatternLower)
+                                  })
+                                  .map((themeKey) => {
+                                    const componentTheme:
+                                    | Record<string, string>
+                                    | undefined =
+                                      themeKey === 'common'
+                                        ? this.themeCommonDefault
+                                        : (theme as any)[themeKey]
+                                    if (componentTheme === undefined) {
+                                      return null
+                                    }
+                                    const varKeys = Object.keys(
+                                      componentTheme
+                                    ).filter((key) => {
+                                      if (key === 'peers') {
+                                        return componentTheme?.[key] && judgePeersHasVarName(componentTheme?.[key] as unknown as Record<string, object>, varNamePatternLower)
+                                      }
+                                      return (
+                                        key !== 'name' &&
+                                        key
+                                          .toLowerCase()
+                                          .includes(varNamePatternLower)
+                                      )
+                                    })
+                                    if (!varKeys.length) {
+                                      return null
+                                    }
+                                    filteredItemsCount += 1
+                                    return this.renderCollapseItem(varKeys, componentTheme, themeKey)
+                                  })
+                                if (!filteredItemsCount) return <NEmpty />
+                                return collapsedItems
+                              }
+                            }}
+                          </NCollapse>
+                        </>
+                      )
+                    }}
+                  </NScrollbar>
                 )
               }}
             </NPopover>,
-            this.$slots.default?.()
+            renderSlot(this.$slots, 'default')
           ]
         }}
       </NConfigProvider>
