@@ -44,8 +44,6 @@ const zhCN: NLocale = {
     endDatePlaceholder: '结束日期',
     startDatetimePlaceholder: '开始日期时间',
     endDatetimePlaceholder: '结束日期时间',
-    startMonthPlaceholder: '开始月份',
-    endMonthPlaceholder: '结束月份',
     monthBeforeYear: false,
     firstDayOfWeek: 0,
     today: '今天'
@@ -57,8 +55,8 @@ const zhCN: NLocale = {
     clear: '重置'
   },
   Transfer: {
-    sourceTitle: '源项',
-    targetTitle: '目标项'
+    total: (num: number): string => `共 ${num} 项`,
+    selectedTotal: (num: number): string => `已选 ${num} 项`
   },
   Empty: {
     description: '无数据'
@@ -108,8 +106,7 @@ const zhCN: NLocale = {
     tipClockwise: '向右旋转',
     tipZoomOut: '缩小',
     tipZoomIn: '放大',
-    tipClose: '关闭（Esc）',
-    tipOriginalSize: '缩放到原始尺寸'
+    tipClose: '关闭（Esc）'
   }
 }
 

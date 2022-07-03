@@ -44,9 +44,6 @@ const jaJP: NLocale = {
     endDatePlaceholder: '終了日',
     startDatetimePlaceholder: '開始時間',
     endDatetimePlaceholder: '終了時間',
-    // FIXME: translation needed
-    startMonthPlaceholder: 'Start Month',
-    endMonthPlaceholder: 'End Month',
     monthBeforeYear: false,
     firstDayOfWeek: 0,
     today: '今日'
@@ -58,8 +55,8 @@ const jaJP: NLocale = {
     clear: 'リセット'
   },
   Transfer: {
-    sourceTitle: '元',
-    targetTitle: '先'
+    total: (num: number): string => `Total ${num} items`,
+    selectedTotal: (num: number): string => `Selected ${num} items`
   },
   Empty: {
     description: 'データなし'
@@ -109,9 +106,7 @@ const jaJP: NLocale = {
     tipClockwise: '右に回転',
     tipZoomOut: '縮小',
     tipZoomIn: '拡大',
-    tipClose: '閉じる (Esc)',
-    // TODO: translation
-    tipOriginalSize: 'Zoom to original size'
+    tipClose: '閉じる (Esc)'
   }
 }
 

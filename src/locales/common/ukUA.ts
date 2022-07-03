@@ -45,9 +45,6 @@ const ukUA: NLocale = {
     endDatePlaceholder: 'Дата завершення',
     startDatetimePlaceholder: 'Дата і час початку',
     endDatetimePlaceholder: 'Дата і час завершення',
-    // FIXME: translation needed
-    startMonthPlaceholder: 'Start Month',
-    endMonthPlaceholder: 'End Month',
     monthBeforeYear: true,
     firstDayOfWeek: 0 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
     today: 'Сьогодні'
@@ -59,8 +56,8 @@ const ukUA: NLocale = {
     clear: 'Стерти'
   },
   Transfer: {
-    sourceTitle: 'Джерело',
-    targetTitle: 'Ціль'
+    total: (num: number): string => `Total ${num} items`,
+    selectedTotal: (num: number): string => `Selected ${num} items`
   },
   Empty: {
     description: 'Немає даних'
@@ -111,9 +108,7 @@ const ukUA: NLocale = {
     tipClockwise: 'Clockwise',
     tipZoomOut: 'Zoom out',
     tipZoomIn: 'Zoom in',
-    tipClose: 'Close (Esc)',
-    // TODO: translation
-    tipOriginalSize: 'Zoom to original size'
+    tipClose: 'Close (Esc)'
   }
 }
 
