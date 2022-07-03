@@ -53,7 +53,7 @@ describe('n-data-table', () => {
   })
 
   it('should work with `itemCount` with `remote`', async () => {
-    const onPageChange = jest.fn((page: number): void => {
+    const onPageChange = vi.fn((page: number): void => {
       setTimeout(() => {
         pagination.page = page
         pagination.itemCount = data.length
@@ -786,7 +786,7 @@ describe('n-data-table', () => {
   })
 
   it('should work with `on-update:checked-row-keys` prop', async () => {
-    const handleCheck = jest.fn()
+    const handleCheck = vi.fn()
     const columns: DataTableColumns = [
       {
         type: 'selection'
@@ -990,7 +990,7 @@ describe('props.columns', () => {
     const wrapper = mount(() => (
       <NDataTable columns={columns} data={data} row-key={rowKey} />
     ))
-    expect(wrapper.find('tbody .n-data-table-td__ellipsis').exists()).toBe(true)
+    expect(wrapper.find('tbody .n-data-table-td--ellipsis').exists()).toBe(true)
     expect(wrapper.find('tbody .n-ellipsis').exists()).toBe(true)
     expect(wrapper.find('tbody .n-ellipsis').attributes('style')).toContain(
       'text-overflow: ellipsis'
@@ -1115,7 +1115,7 @@ describe('props.columns', () => {
     const columns: DataTableColumns = [
       {
         type: 'expand',
-        expandable: (rowData) => rowData.name === 0,
+        expandable: (_, index) => index === 0,
         renderExpand: (rowData: any) => {
           return `${String(rowData.name)} is a good guy.`
         }
