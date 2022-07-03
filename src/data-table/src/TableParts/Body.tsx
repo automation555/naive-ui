@@ -30,11 +30,11 @@ import {
   TmNode
 } from '../interface'
 import { createRowClassName, getColKey, isColumnSorting } from '../utils'
-import type { ColItem } from '../use-group-header'
 import Cell from './Cell'
 import ExpandTrigger from './ExpandTrigger'
 import RenderSafeCheckbox from './BodyCheckbox'
 import TableHeader from './Header'
+import type { ColItem } from '../use-group-header'
 
 interface NormalRowRenderInfo {
   striped: boolean
@@ -200,9 +200,10 @@ export default defineComponent({
     function handleCheckboxUpdateChecked (
       tmNode: { key: RowKey },
       checked: boolean,
-      shiftKey: boolean
+      shiftKey: boolean,
+      single?: boolean
     ): void {
-      if (shiftKey) {
+      if (shiftKey && !single) {
         const lastIndex = paginatedDataRef.value.findIndex(
           (item) => item.key === lastSelectedKey
         )
@@ -229,9 +230,9 @@ export default defineComponent({
       }
 
       if (checked) {
-        doCheck(tmNode.key)
+        doCheck(tmNode.key, single)
       } else {
-        doUncheck(tmNode.key)
+        doUncheck(tmNode.key, single)
       }
       lastSelectedKey = tmNode.key
     }
@@ -665,7 +666,7 @@ export default defineComponent({
                   {...props}
                 >
                   {cols.map((col, colIndex) => {
-                    if (rowIndex in cordToPass) {
+                    if (!isVirtual && rowIndex in cordToPass) {
                       const cordOfRowToPass = cordToPass[rowIndex]
                       const indexInCordOfRowToPass =
                         cordOfRowToPass.indexOf(colIndex)
@@ -800,7 +801,8 @@ export default defineComponent({
                                 handleCheckboxUpdateChecked(
                                   rowInfo.tmNode,
                                   checked,
-                                  e.shiftKey
+                                  e.shiftKey,
+                                  column.single
                                 )
                               }
                             />
