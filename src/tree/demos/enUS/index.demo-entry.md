@@ -29,7 +29,7 @@ checkbox-placement.vue
 
 | Name | Type | default | Description | Version |
 | --- | --- | --- | --- | --- |
-| allow-checking-not-loaded | `boolean` | `false` | Whether to allow cascade checking on not loaded nodes. If you want to use this, you should know the `check-keys` may be incomplete. Also, you should aware about the consistency bewteen naive's checking logic and your backend's checking logic, especially when there are disabled nodes. | 2.28.1 |
+| allow-checking-not-loaded | `boolean` | `false` | Whether to allow cascade checking on not loaded nodes. If you want to use this, you should know the `check-row-keys` may be incomplete. Also, you should aware about the consistency bewteen naive's checking logic and your backend's checking logic, especially when there are disabled nodes. | 2.28.1 |
 | allow-drop | `(info: { dropPosition: DropPosition, node: TreeOption, phase: 'drag' \| 'drop' }) => boolean` | A function that prohibit dropping inside leaf node. | Whether to allow dropping. |  |
 | block-line | `boolean` | `false` | Nodes spread out the whole row. |  |
 | block-node | `boolean` | `false` | The node name is spread out in the whole row. |  |
@@ -47,7 +47,6 @@ checkbox-placement.vue
 | default-selected-keys | `Array<string \| number>` | `[]` | Nodes selected by default. |  |
 | draggable | `boolean` | `false` | Whether it can be dragged. |  |
 | expand-on-dragenter | `boolean` | `true` | Whether to expand nodes after dragenter. |  |
-| expand-on-click | `boolean` | `false` | Whether to expand or collapse nodes after click. | 2.29.1 |
 | expanded-keys | `Array<string \| number>` | `undefined` | If set, expanded status will work in controlled manner. |  |
 | filter | `(pattern: string, node: TreeOption) => boolean` | A simple string based filter. | The function that filter tree nodes based on pattern. |  |
 | show-irrelevant-nodes | `boolean` | `true` | Whether to filter unmached nodes when tree is in filter mode. | 2.28.1 |
@@ -58,13 +57,14 @@ checkbox-placement.vue
 | multiple | `boolean` | `false` | Whether to allow multiple selection of nodes. |  |
 | on-load | `(node: TreeOption) => Promise<void>` | `undefined` | Callback function for asynchronously loading data. |  |
 | pattern | `string` | `''` | What to search by default. |  |
-| render-label | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | Render function of all the options' label. |  |
-| render-prefix | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | Render function of all the options' prefix. |  |
-| render-suffix | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | Render function of all the options' suffix. |  |
+| render-label | `(info: {option: TreeOption, checked: boolean, selected: boolean}) => VNodeChild` | `undefined` | Render function of all the options' label. |  |
+| render-prefix | `(info: {option: TreeOption, checked: boolean, selected: boolean}) => VNodeChild` | `undefined` | Render function of all the options' prefix. |  |
+| render-suffix | `(info: {option: TreeOption, checked: boolean, selected: boolean}) => VNodeChild` | `undefined` | Render function of all the options' suffix. |  |
 | render-switcher-icon | `() => VNodeChild` | `undefined` | Render function of option switcher icon. | 2.24.0 |
 | selectable | `boolean` | `true` | Whether the node can be selected. |  |
 | selected-keys | `Array<string \| number>` | `undefined` | If set, selected status will work in controlled manner. |  |
 | virtual-scroll | `boolean` | `false` | Whether to enable virtual scroll. You need to set proper style height of the tree in advance. |  |
+| tree-node-height | `number` | `24` | you need to pass your customized tree-node-height when enable virtual scroll and change each tree node height |  |
 | watch-props | `Array<'defaultCheckedKeys' \| 'defaultSelectedKeys' \|'defaultExpandedKeys'>` | `undefined` | Default prop names that needed to be watched. Components will be updated after the prop is changed. Note: the `watch-props` itself is not reactive. |  |
 | on-dragend | `(data: { node: TreeOption, event: DragEvent }) => void` | `undefined` | The callback function after the node completes the dragging action. |  |
 | on-dragenter | `(data: { node: TreeOption, event: DragEvent }) => void` | `undefined` | Callback function in node drag and drop. |  |

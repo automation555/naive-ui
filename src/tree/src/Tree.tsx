@@ -66,7 +66,7 @@ import { NEmpty } from '../../empty'
 // During expanding, some node are mis-applied with :active style
 // Async dnd has bug
 
-const ITEM_SIZE = 30 // 24 + 3 + 3
+// const ITEM_SIZE = 30 // 24 + 3 + 3
 
 export function createTreeMateOptions<T> (
   keyField: string,
@@ -117,7 +117,6 @@ export const treeSharedProps = {
     default: () => []
   },
   indeterminateKeys: Array as PropType<Key[]>,
-  renderSwitcherIcon: Function as PropType<RenderSwitcherIcon>,
   onUpdateIndeterminateKeys: [Function, Array] as PropType<
   MaybeArray<OnUpdateKeys>
   >,
@@ -137,11 +136,14 @@ const treeProps = {
     type: Array as PropType<TreeOptions>,
     default: () => []
   },
+  treeNodeHeight: {
+    type: Number,
+    default: 24
+  },
   expandOnDragenter: {
     type: Boolean,
     default: true
   },
-  expandOnClick: Boolean,
   cancelable: {
     type: Boolean,
     default: true
@@ -195,6 +197,7 @@ const treeProps = {
   renderLabel: Function as PropType<RenderLabel>,
   renderPrefix: Function as PropType<RenderPrefix>,
   renderSuffix: Function as PropType<RenderSuffix>,
+  renderSwitcherIcon: Function as PropType<RenderSwitcherIcon>,
   nodeProps: Function as PropType<TreeNodeProps>,
   onDragenter: [Function, Array] as PropType<
   MaybeArray<(e: TreeDragInfo) => void>
@@ -264,6 +267,7 @@ export default defineComponent({
         }
       })
     }
+    const ITEM_SIZE = props.treeNodeHeight + 6
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props)
     const themeRef = useTheme(
       'Tree',
@@ -400,7 +404,7 @@ export default defineComponent({
       displayTreeMateRef.value.getFlattenedNodes(mergedExpandedKeysRef.value)
     )
 
-    const { pendingNodeKeyRef, handleKeydown } = useKeyboard({
+    const { pendingNodeKeyRef, handleKeyup, handleKeydown } = useKeyboard({
       mergedSelectedKeysRef,
       fNodesRef,
       mergedExpandedKeysRef,
@@ -1243,7 +1247,6 @@ export default defineComponent({
       disabledRef: toRef(props, 'disabled'),
       checkableRef: toRef(props, 'checkable'),
       selectableRef: toRef(props, 'selectable'),
-      expandOnClickRef: toRef(props, 'expandOnClick'),
       onLoadRef: toRef(props, 'onLoad'),
       draggableRef: toRef(props, 'draggable'),
       blockLineRef: toRef(props, 'blockLine'),
@@ -1277,7 +1280,8 @@ export default defineComponent({
       handleCheck
     })
     const exposedMethods: InternalTreeInst = {
-      handleKeydown
+      handleKeydown,
+      handleKeyup
     }
     const cssVarsRef = computed(() => {
       const {
@@ -1313,6 +1317,7 @@ export default defineComponent({
       ? useThemeClass('tree', undefined, cssVarsRef, props)
       : undefined
     return {
+      ITEM_SIZE,
       mergedClsPrefix: mergedClsPrefixRef,
       mergedTheme: themeRef,
       fNodes: mergedFNodesRef,
@@ -1328,6 +1333,7 @@ export default defineComponent({
       handleAfterEnter,
       handleResize,
       handleKeydown: exposedMethods.handleKeydown,
+      handleKeyup: exposedMethods.handleKeyup,
       cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
       themeClass: themeClassHandle?.themeClass,
       onRender: themeClassHandle?.onRender
@@ -1346,8 +1352,10 @@ export default defineComponent({
       disabled,
       internalFocusable,
       checkable,
+      handleKeyup,
       handleKeydown,
-      handleFocusout
+      handleFocusout,
+      ITEM_SIZE
     } = this
     const mergedFocusable = internalFocusable && !disabled
     const tabindex = mergedFocusable ? '0' : undefined
@@ -1387,6 +1395,7 @@ export default defineComponent({
           theme={mergedTheme.peers.Scrollbar}
           themeOverrides={mergedTheme.peerOverrides.Scrollbar}
           tabindex={tabindex}
+          onKeyup={mergedFocusable ? handleKeyup : undefined}
           onKeydown={mergedFocusable ? handleKeydown : undefined}
           onFocusout={mergedFocusable ? handleFocusout : undefined}
         >
@@ -1433,6 +1442,7 @@ export default defineComponent({
         <NxScrollbar
           class={treeClass}
           tabindex={tabindex}
+          onKeyup={mergedFocusable ? handleKeyup : undefined}
           onKeydown={mergedFocusable ? handleKeydown : undefined}
           onFocusout={mergedFocusable ? handleFocusout : undefined}
           style={this.cssVars as CSSProperties}
@@ -1457,6 +1467,7 @@ export default defineComponent({
           tabindex={tabindex}
           ref="selfElRef"
           style={this.cssVars as CSSProperties}
+          onKeyup={mergedFocusable ? handleKeyup : undefined}
           onKeydown={mergedFocusable ? handleKeydown : undefined}
           onFocusout={mergedFocusable ? handleFocusout : undefined}
           onDragleave={draggable ? this.handleDragLeaveTree : undefined}
