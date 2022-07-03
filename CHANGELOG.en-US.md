@@ -4,53 +4,11 @@
 
 ### Fixes
 
-- Fix `n-data-table` column's `colSpan` doesn't work correctly in virtual scroll mode, closes [#3052](https://github.com/TuSimple/naive-ui/issues/3052).
-- Fix `n-data-table` doesn't show `summary` row in virtual scroll mode, closes [#3202](https://github.com/TuSimple/naive-ui/issues/3202).
-- Fix `n-cascader`'s filter menu doesn't show option path, closes [#3220](https://github.com/TuSimple/naive-ui/issues/3220).
-- Fix `n-cascader`'s `filter` prop may not get correct `path`.
-- Fix `n-date-picker` menu's quarter text isn't same having `type="quarterrange"` and `type="quarter"`, closes [#3217](https://github.com/TuSimple/naive-ui/issues/3217).
-
-## 2.30.8
-
-### Fixes
-
-- Fix `n-select`'s menu transition style, closes [#3211](https://github.com/TuSimple/naive-ui/issues/3211).
-
-## 2.30.7
-
-### Fixes
-
-- Fix `n-tabs`'s `bar-width` props invalid when `0` set, closes [#3171](https://github.com/TuSimple/naive-ui/issues/3171).
-- Fix `n-drawer` has log warnings of console when use `show-mask` prop, closes [#3172](https://github.com/TuSimple/naive-ui/issues/3172).
-- Fix `n-button` doesn't omit content if content is wrapped in ellipsis container, closes [#3178](https://github.com/TuSimple/naive-ui/issues/3178).
-- Fix `n-select` will remove select value in multiple mode in `form` if Enter key is pressed in input element. Closes [#3169](https://github.com/TuSimple/naive-ui/issues/3169).
-- Fix `n-select`'s filter prop not working, closes [#3175](https://github.com/TuSimple/naive-ui/issues/3175).
-- Fix `n-modal`'s mask may overlay over content if no preset is used, closes [#3204](https://github.com/TuSimple/naive-ui/issues/3204).
-- Fix `n-button`'s icon doesn't align correctly if it's too big or small.
-- Fix `n-select`'s created options may repeat multiple times in menu, closes [#3206](https://github.com/TuSimple/naive-ui/issues/3206).
+- Fix `n-color-picker` can't set alpha value correctly by hand
 
 ### Feats
 
-- `n-date-picker`'s `type` prop supports `'quarterrange'` and `'yearrange'`.
-- `n-tree-select` adds `render-prefix` prop.
-- `n-tree-select` adds `render-suffix` prop.
-- `n-tree-select` adds `render-switcher-icon` prop.
-- `n-tree-select` adds `node-props` prop.
-- `n-tree-select` adds `render-label` prop, closes [#3197](https://github.com/TuSimple/naive-ui/issues/3197).
-- `n-tree-select` adds `render-tag` prop.
-- `n-notification` adds `titleFontSize`, `metaFontSize`, `descriptionFontSize` theme variables.
-
-## 2.30.6
-
-### Fixes
-
-- Fix `n-color-picker` can't input alpha value correctly manually.
-- Fix some components don't work correctly if `__VUE_OPTIONS_API__` is set to `false`, closes [#3146](https://github.com/TuSimple/naive-ui/issues/3146).
-- Fix `n-grid` doesn't adjust it's content to fit responsive config in SSR page, closes [#2462](https://github.com/TuSimple/naive-ui/issues/2462).
-- Fix `n-modal` when many instances are activated at same time, `on-mask-click` will be triggered on every modal even only one mask is clicked [#3147](https://github.com/TuSimple/naive-ui/issues/3147).
-- Fix `n-data-table`'s column `ellipsis` prop's type doesn't allow `style` prop.
-- Fix `n-data-table`'s column will lose box shadow when set to `ellipsis` & `fixed` simultaneously, closes [#3145](https://github.com/TuSimple/naive-ui/issues/3145).
-- Fix `n-image`'s `lazy` prop doesn't work on Safari & Firefox.
+- `n-tree` adds `check-on-click` prop to control `checked` status
 
 ## 2.30.5
 

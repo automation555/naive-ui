@@ -40,6 +40,7 @@ checkbox-placement.vue
 | checkbox-placement | `'left' \| 'right'` | `'left'` | Checkbox's placement. | 2.28.3 |
 | children-field | `string` | `'children'` | The children field in `TreeOption`. |  |
 | checked-keys | `Array<string \| number>` | `undefined` | Checked keys of the tree. |  |
+| check-on-click | `boolean \| (node: TreeOption) => boolean` | `true` | Allow to click the `label` node to checked it when 'checkable = true' | NEXT_VERSION |
 | data | `Array<TreeOption>` | `[]` | The node data of the tree. Reset `data` will cause clearing of some uncontrolled status. If you need to modify data, you'd better make tree work in a controlled manner. |  |
 | default-checked-keys | `Array<string \| number>` | `[]` | Multiple options selected by default. |  |
 | default-expand-all | `boolean` | `false` | Expand all options. |  |
@@ -58,9 +59,9 @@ checkbox-placement.vue
 | multiple | `boolean` | `false` | Whether to allow multiple selection of nodes. |  |
 | on-load | `(node: TreeOption) => Promise<void>` | `undefined` | Callback function for asynchronously loading data. |  |
 | pattern | `string` | `''` | What to search by default. |  |
-| render-label | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | Render function of all the options' label. |  |
-| render-prefix | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | Render function of all the options' prefix. |  |
-| render-suffix | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | Render function of all the options' suffix. |  |
+| render-label | `(info: {option: TreeOption, checked: boolean, selected: boolean}) => VNodeChild` | `undefined` | Render function of all the options' label. |  |
+| render-prefix | `(info: {option: TreeOption, checked: boolean, selected: boolean}) => VNodeChild` | `undefined` | Render function of all the options' prefix. |  |
+| render-suffix | `(info: {option: TreeOption, checked: boolean, selected: boolean}) => VNodeChild` | `undefined` | Render function of all the options' suffix. |  |
 | render-switcher-icon | `() => VNodeChild` | `undefined` | Render function of option switcher icon. | 2.24.0 |
 | selectable | `boolean` | `true` | Whether the node can be selected. |  |
 | selected-keys | `Array<string \| number>` | `undefined` | If set, selected status will work in controlled manner. |  |

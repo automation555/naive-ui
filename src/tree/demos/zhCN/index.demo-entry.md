@@ -44,6 +44,7 @@ scroll-debug.vue
 | checkbox-placement | `'left' \| 'right'` | `'left'` | 复选框的位置 | 2.28.3 |
 | children-field | `string` | `'children'` | 替代 `TreeOption` 中的 children 字段名 |  |
 | checked-keys | `Array<string \| number>` | `undefined` | 如果设定则 `checked` 状态受控 |  |
+| check-on-click | `boolean \| (node: TreeOption) => boolean` | `true` | 是否允许点击`label`节点进行选中，仅在`checkable = true`下生效 | NEXT_VERSION |
 | data | `Array<TreeOption>` | `[]` | 树的节点数据。重新设置 `data` 会将一些非受控状态清空，如果你需要在使用中改动 `data`，最好以受控的方式控制树 |  |
 | default-checked-keys | `Array<string \| number>` | `[]` | 默认选中的多选项 |  |
 | default-expand-all | `boolean` | `false` | 展开全部选项 |  |
@@ -61,9 +62,9 @@ scroll-debug.vue
 | multiple | `boolean` | `false` | 是否允许节点多选 |  |
 | on-load | `(node: TreeOption) => Promise<void>` | `undefined` | 异步加载数据的回调函数 |  |
 | pattern | `string` | `''` | 默认搜索的内容 |  |
-| render-label | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | 节点内容的渲染函数 |  |
-| render-prefix | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | 节点前缀的渲染函数 |  |
-| render-suffix | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | 节点后缀的渲染函数 |  |
+| render-label | `(info: {option: TreeOption, checked: boolean, selected: boolean}) => VNodeChild` | `undefined` | 节点内容的渲染函数 |  |
+| render-prefix | `(info: {option: TreeOption, checked: boolean, selected: boolean}) => VNodeChild` | `undefined` | 节点前缀的渲染函数 |  |
+| render-suffix | `(info: {option: TreeOption, checked: boolean, selected: boolean}) => VNodeChild` | `undefined` | 节点后缀的渲染函数 |  |
 | render-switcher-icon | `() => VNodeChild` | `undefined` | 节点展开开关的渲染函数 | 2.24.0 |
 | selectable | `boolean` | `true` | 节点是否可以被选中 |  |
 | selected-keys | `Array<string \| number>` | `undefined` | 如果设定则 `selected` 状态受控 |  |
