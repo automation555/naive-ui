@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { h, ref, defineComponent, inject, computed, watchEffect } from 'vue'
+import {
+  h,
+  ref,
+  defineComponent,
+  inject,
+  computed,
+  renderSlot,
+  watchEffect
+} from 'vue'
 import { formatLength } from '../../_utils'
 import TableHeader from './TableParts/Header'
 import TableBody from './TableParts/Body'
@@ -20,7 +28,8 @@ export default defineComponent({
       maxHeightRef,
       minHeightRef,
       flexHeightRef,
-      syncScrollState
+      syncScrollState,
+      stickyRef
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey)!
 
@@ -61,10 +70,7 @@ export default defineComponent({
     }
     const exposedMethods: MainTableRef = {
       getBodyElement,
-      getHeaderElement,
-      scrollTo (arg0: any, arg1?: any) {
-        bodyInstRef.value?.scrollTo(arg0, arg1)
-      }
+      getHeaderElement
     }
     watchEffect(() => {
       const { value: selfEl } = selfElRef
@@ -86,23 +92,25 @@ export default defineComponent({
       bodyInstRef,
       bodyStyle: bodyStyleRef,
       flexHeight: flexHeightRef,
+      sticky: stickyRef,
       handleBodyResize,
       ...exposedMethods
     }
   },
   render () {
-    const { mergedClsPrefix, maxHeight, flexHeight } = this
-    const headerInBody = maxHeight === undefined && !flexHeight
+    const { mergedClsPrefix, maxHeight, flexHeight, sticky } = this
+    const headerInBody = maxHeight === undefined && !flexHeight && !sticky
     return (
       <div class={`${mergedClsPrefix}-data-table-base-table`} ref="selfElRef">
         {headerInBody ? null : <TableHeader ref="headerInstRef" />}
         <TableBody
           ref="bodyInstRef"
-          bodyStyle={this.bodyStyle}
+          style={this.bodyStyle}
           showHeader={headerInBody}
           flexHeight={flexHeight}
           onResize={this.handleBodyResize}
         />
+        {renderSlot(this.$slots, 'default')}
       </div>
     )
   }

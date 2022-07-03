@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { h, defineComponent, inject, PropType, ref, watchEffect } from 'vue'
+import { h, defineComponent, inject, PropType } from 'vue'
 import { NScrollbar } from '../../_internal'
-import { notificationProviderInjectionKey } from './context'
-import type { NotificationPlacement } from './NotificationProvider'
+import { notificationProviderInjectionKey } from './NotificationProvider'
 
-export const NotificationContainer = defineComponent({
+export default defineComponent({
   name: 'NotificationContainer',
   props: {
     scrollable: {
@@ -12,33 +10,26 @@ export const NotificationContainer = defineComponent({
       required: true
     },
     placement: {
-      type: String as PropType<NotificationPlacement>,
+      type: String as PropType<
+      'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+      >,
       required: true
     }
   },
   setup () {
-    const { mergedThemeRef, mergedClsPrefixRef, wipTransitionCountRef } =
-      inject(notificationProviderInjectionKey)!
-    const selfRef = ref<HTMLElement | null>(null)
-    watchEffect(() => {
-      if (wipTransitionCountRef.value > 0) {
-        selfRef?.value?.classList.add('transitioning')
-      } else {
-        selfRef?.value?.classList.remove('transitioning')
-      }
-    })
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { mergedThemeRef, mergedClsPrefixRef } = inject(
+      notificationProviderInjectionKey
+    )!
     return {
-      selfRef,
       mergedTheme: mergedThemeRef,
-      mergedClsPrefix: mergedClsPrefixRef,
-      transitioning: wipTransitionCountRef
+      mergedClsPrefix: mergedClsPrefixRef
     }
   },
   render () {
     const { $slots, scrollable, mergedClsPrefix, mergedTheme, placement } = this
     return (
       <div
-        ref="selfRef"
         class={[
           `${mergedClsPrefix}-notification-container`,
           scrollable && `${mergedClsPrefix}-notification-container--scrollable`,

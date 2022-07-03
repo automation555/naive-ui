@@ -1,13 +1,17 @@
 import { TreeNode } from 'treemate'
-import { CSSProperties, Ref, VNodeChild, HTMLAttributes, Slots } from 'vue'
-import type { ScrollTo } from '../../scrollbar/src/Scrollbar'
-import type { EllipsisProps } from '../../ellipsis/src/Ellipsis'
-import type { NLocale } from '../../locales'
-import type { MergedTheme } from '../../_mixins'
-import { createInjectionKey } from '../../_utils'
-import type { DataTableTheme } from '../styles'
-import type { RowItem, ColItem } from './use-group-header'
-import type { DataTableSelectionOption } from './TableParts/SelectionMenu'
+import {
+  CSSProperties,
+  InjectionKey,
+  Ref,
+  VNodeChild,
+  HTMLAttributes
+} from 'vue'
+import { EllipsisProps } from '../../ellipsis/src/Ellipsis'
+import { NLocale } from '../../locales'
+import { MergedTheme } from '../../_mixins'
+import { DataTableTheme } from '../styles'
+import { RowItem, ColItem } from './use-group-header'
+import { DataTableSelectionOption } from './TableParts/SelectionMenu'
 
 export type FilterOptionValue = string | number
 export type ColumnKey = string | number
@@ -27,10 +31,6 @@ export type CreateRowClassName<T = InternalRowData> = (
   index: number
 ) => string
 export type CreateRowProps<T = InternalRowData> = (
-  row: T,
-  index: number
-) => HTMLAttributes
-export type CreateCellProps<T = InternalRowData> = (
   row: T,
   index: number
 ) => HTMLAttributes
@@ -57,16 +57,14 @@ export type TmNode = TreeNode<InternalRowData>
 // for compat may add null
 export type SortOrder = 'ascend' | 'descend' | false
 
-export type Ellipsis = boolean | (EllipsisProps & { style?: CSSProperties })
+export type Ellipsis = boolean | EllipsisProps
 
-export interface CommonColumnInfo<T = InternalRowData> {
+export interface CommonColumnInfo {
   fixed?: 'left' | 'right'
-  width?: number | string
-  minWidth?: number | string
+  width?: number
   className?: string
   align?: 'left' | 'center' | 'right'
   ellipsis?: Ellipsis
-  cellProps?: (rowData: T, rowIndex: number) => HTMLAttributes
 }
 
 export type TableColumnTitle =
@@ -89,7 +87,7 @@ export type TableColumnGroup<T = InternalRowData> = {
 
   // to suppress type error in table header
   filterOptions?: never
-} & CommonColumnInfo<T>
+} & CommonColumnInfo
 
 export type TableBaseColumn<T = InternalRowData> = {
   title?: TableColumnTitle
@@ -97,8 +95,6 @@ export type TableBaseColumn<T = InternalRowData> = {
   // for compat maybe default
   type?: never
   key: ColumnKey
-
-  tree?: boolean
 
   sorter?: boolean | Sorter<T> | 'default'
   defaultSortOrder?: SortOrder
@@ -115,14 +111,13 @@ export type TableBaseColumn<T = InternalRowData> = {
   filterMultiple?: boolean
 
   render?: (rowData: T, rowIndex: number) => VNodeChild
-  renderFilter?: RenderFilter
-  renderFilterIcon?: RenderFilterIcon
   renderSorter?: RenderSorter
-  renderSorterIcon?: RenderSorterIcon
+  renderFilter?: RenderFilter
+  renderFilterIcon?: RenderFilter
   renderFilterMenu?: RenderFilterMenu
   colSpan?: (rowData: T, rowIndex: number) => number
   rowSpan?: (rowData: T, rowIndex: number) => number
-} & CommonColumnInfo<T>
+} & CommonColumnInfo
 
 export type TableSelectionColumn<T = InternalRowData> = {
   type: 'selection'
@@ -137,7 +132,7 @@ export type TableSelectionColumn<T = InternalRowData> = {
   filterOptionValue?: never
   colSpan?: never
   rowSpan?: never
-} & CommonColumnInfo<T>
+} & CommonColumnInfo
 
 export type RenderExpand<T = InternalRowData> = (
   row: T,
@@ -145,7 +140,7 @@ export type RenderExpand<T = InternalRowData> = (
 ) => VNodeChild
 
 // TODO: we should deprecate `index` since it would change after row is expanded
-export type Expandable<T = InternalRowData> = (row: T) => boolean
+export type Expandable<T = InternalRowData> = (row: T, index: number) => boolean
 export interface TableExpandColumn<T = InternalRowData>
   extends Omit<TableSelectionColumn<T>, 'type'> {
   type: 'expand'
@@ -155,7 +150,7 @@ export interface TableExpandColumn<T = InternalRowData>
 }
 
 export type TableColumn<T = InternalRowData> =
-  | TableColumnGroup<T>
+  | TableColumnGroup
   | TableBaseColumn<T>
   | TableSelectionColumn<T>
   | TableExpandColumn<T>
@@ -166,9 +161,9 @@ export type DataTableSelectionOptions = Array<
 | { label: string, key: string | number, onSelect: () => void }
 >
 export interface DataTableInjection {
-  slots: Slots
   indentRef: Ref<number>
-  childTriggerColIndexRef: Ref<number>
+  hasChildrenRef: Ref<boolean>
+  firstContentfulColIndexRef: Ref<number>
   componentId: string
   checkOptionsRef: Ref<DataTableSelectionOptions | undefined>
   hoverKeyRef: Ref<RowKey | null>
@@ -181,9 +176,7 @@ export interface DataTableInjection {
   leftFixedColumnsRef: Ref<TableColumns>
   rightFixedColumnsRef: Ref<TableColumns>
   leftActiveFixedColKeyRef: Ref<ColumnKey | null>
-  leftActiveFixedChildrenColKeysRef: Ref<ColumnKey[]>
   rightActiveFixedColKeyRef: Ref<ColumnKey | null>
-  rightActiveFixedChildrenColKeysRef: Ref<ColumnKey[]>
   fixedColumnLeftMapRef: Ref<
   Record<ColumnKey, { start: number, end: number } | undefined>
   >
@@ -216,12 +209,12 @@ export interface DataTableInjection {
   flexHeightRef: Ref<boolean>
   headerCheckboxDisabledRef: Ref<boolean>
   stripedRef: Ref<boolean>
-  onLoadRef: Ref<DataTableOnLoad | undefined>
-  loadingKeySetRef: Ref<Set<RowKey>>
-  paginationBehaviorOnFilterRef: Ref<'current' | 'first'>
-  doUpdatePage: (page: number) => void
+  stickyRef: Ref<boolean>
   doUpdateExpandedRowKeys: (keys: RowKey[]) => void
-  doUpdateFilters: (filters: FilterState, sourceColumn: TableBaseColumn) => void
+  doUpdateFilters: (
+    filters: FilterState,
+    sourceColumn?: TableBaseColumn
+  ) => void
   deriveNextSorter: (sorter: SortState | null) => void
   doUncheckAll: (checkWholeTable?: boolean) => void
   doCheckAll: (checkWholeTable?: boolean) => void
@@ -231,14 +224,10 @@ export interface DataTableInjection {
   handleTableBodyScroll: (e: Event) => void
   syncScrollState: (deltaX?: number, deltaY?: number) => void
   setHeaderScrollLeft: (scrollLeft: number) => void
-  renderCell: Ref<
-  | undefined
-  | ((value: any, rowData: object, column: TableBaseColumn) => VNodeChild)
-  >
 }
 
-export const dataTableInjectionKey =
-  createInjectionKey<DataTableInjection>('n-data-table')
+export const dataTableInjectionKey: InjectionKey<DataTableInjection> =
+  Symbol('dataTable')
 
 export interface MainTableInjection {
   leftActiveFixedColKey: ColumnKey | null
@@ -250,20 +239,12 @@ export type RenderFilter = (props: {
   show: boolean
 }) => VNodeChild
 
-export type RenderFilterIcon = RenderFilter
-
-export type RenderSorter = (props: { order: SortOrder }) => VNodeChild
-
-export type RenderSorterIcon = RenderSorter
+export type RenderSorter = (props: { order: SortOrder | false }) => VNodeChild
 
 export type RenderFilterMenu = (actions: { hide: () => void }) => VNodeChild
 
 export type OnUpdateExpandedRowKeys = (keys: RowKey[]) => void
-export type OnUpdateCheckedRowKeys = (
-  keys: RowKey[],
-  row: InternalRowData[]
-) => void
-
+export type OnUpdateCheckedRowKeys = (keys: RowKey[]) => void
 // `null` only occurs when clearSorter is called
 export type OnUpdateSorter = (sortState: SortState & SortState[] & null) => void
 export type OnUpdateSorterImpl = (
@@ -271,7 +252,7 @@ export type OnUpdateSorterImpl = (
 ) => void
 export type OnUpdateFilters = (
   filterState: FilterState,
-  sourceColumn: TableBaseColumn
+  sourceColumn?: TableBaseColumn
 ) => void
 
 export interface SortState {
@@ -291,12 +272,10 @@ export interface FilterState {
 export interface MainTableRef {
   getHeaderElement: () => HTMLElement | null
   getBodyElement: () => HTMLElement | null
-  scrollTo: ScrollTo
 }
 
 export interface MainTableBodyRef {
   getScrollContainer: () => HTMLElement | null
-  scrollTo: ScrollTo
 }
 
 export interface MainTableHeaderRef {
@@ -319,7 +298,6 @@ export interface DataTableInst {
   clearSorter: () => void
   page: (page: number) => void
   sort: (columnKey: ColumnKey, order: SortOrder) => void
-  scrollTo: ScrollTo
   /** @deprecated it but just leave it here, it does no harm */
   clearFilter: () => void
 }
@@ -329,12 +307,10 @@ export type CreateSummary<T = InternalRowData> = (
 ) => SummaryRowData | SummaryRowData[]
 
 export interface SummaryCell {
-  value?: VNodeChild
+  value?: string | number
   colSpan?: number
   rowSpan?: number
 }
 export interface SummaryRowData {
   [key: string]: SummaryCell
 }
-
-export type DataTableOnLoad = (node: RowData) => Promise<void>
