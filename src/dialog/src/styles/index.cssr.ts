@@ -3,16 +3,13 @@ import { asModal, c, cB, cE, cM, insideModal } from '../../../_utils/cssr'
 // vars:
 // --n-icon-color
 // --n-bezier
+// --n-close-margin
 // --n-icon-margin
 // --n-icon-size
-// --n-close-border-radius
-// --n-close-margin
 // --n-close-size
+// --n-close-color
 // --n-close-color-hover
 // --n-close-color-pressed
-// --n-close-icon-color
-// --n-close-icon-color-hover
-// --n-close-icon-color-pressed
 // --n-color
 // --n-text-color
 // --n-border-radius
@@ -26,7 +23,6 @@ import { asModal, c, cB, cE, cM, insideModal } from '../../../_utils/cssr'
 // --n-action-space
 export default c([
   cB('dialog', `
-    word-break: break-word;
     line-height: var(--n-line-height);
     position: relative;
     background: var(--n-color);
@@ -46,6 +42,14 @@ export default c([
     cM('bordered', {
       border: 'var(--n-border)'
     }),
+    cM('draggable', {
+      position: 'absolute',
+      transform: 'translate(-50%, -50%)'
+    }, [
+      cE('title', `
+        cursor: move;
+    `)
+    ]),
     cM('icon-top', [
       cE('close', {
         margin: 'var(--n-close-margin)'
@@ -66,21 +70,15 @@ export default c([
     cM('icon-left', [
       cE('icon', {
         margin: 'var(--n-icon-margin)'
-      }),
-      cM('closable', [
-        cE('title', `
-          padding-right: calc(var(--n-close-size) + 6px);
-        `)
-      ])
+      })
     ]),
     cE('close', `
+      font-size: var(--n-close-size);
       position: absolute;
       right: 0;
       top: 0;
       margin: var(--n-close-margin);
-      transition:
-        background-color .3s var(--n-bezier),
-        color .3s var(--n-bezier);
+      transition: .3s color var(--n-bezier);
       z-index: 1;
     `),
     cE('content', `
@@ -89,7 +87,7 @@ export default c([
       position: relative;
       word-break: break-word;
     `, [
-      cM('last', 'margin-bottom: 0;')
+      c('&:last-child', 'margin-bottom: 0;')
     ]),
     cE('action', `
       display: flex;
