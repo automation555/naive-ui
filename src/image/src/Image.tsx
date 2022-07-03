@@ -23,7 +23,7 @@ export interface ImageInst {
   click: () => void
 }
 
-const imageProps = {
+export const imageProps = {
   alt: String,
   height: [String, Number] as PropType<string | number>,
   imgProps: Object as PropType<ImgHTMLAttributes>,
