@@ -39,9 +39,7 @@ export type RenderPrefix = RenderTreePart
 
 export type RenderSuffix = RenderTreePart
 
-export type TreeNodeProps = (info: {
-  option: TreeOption
-}) => HTMLAttributes & Record<string, unknown>
+export type TreeNodeProps = (info: { option: TreeOption }) => HTMLAttributes
 
 export interface TreeDragInfo {
   event: DragEvent
@@ -75,6 +73,8 @@ export interface InternalDropInfo {
 }
 
 export type RenderSwitcherIcon = () => VNodeChild
+
+export type CheckOnClick = (option: TreeOption) => void
 
 export interface TreeInjection {
   loadingKeysRef: Ref<Set<Key>>
@@ -112,6 +112,7 @@ export interface TreeInjection {
   multipleRef: Ref<boolean>
   checkboxPlacementRef: 'left' | 'right'
   internalTreeSelect: boolean
+  checkOnClickRef: Ref<boolean | CheckOnClick>
   handleSwitcherClick: (node: TreeNode<TreeOption>) => void
   handleSelect: (node: TreeNode<TreeOption>) => void
   handleCheck: (node: TreeNode<TreeOption>, checked: boolean) => void

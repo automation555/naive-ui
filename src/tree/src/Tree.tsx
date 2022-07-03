@@ -54,7 +54,8 @@ import type {
   RenderPrefix,
   RenderSuffix,
   RenderSwitcherIcon,
-  TreeNodeProps
+  TreeNodeProps,
+  CheckOnClick
 } from './interface'
 import { treeInjectionKey } from './interface'
 import MotionWrapper from './MotionWrapper'
@@ -117,7 +118,6 @@ export const treeSharedProps = {
     default: () => []
   },
   indeterminateKeys: Array as PropType<Key[]>,
-  renderSwitcherIcon: Function as PropType<RenderSwitcherIcon>,
   onUpdateIndeterminateKeys: [Function, Array] as PropType<
   MaybeArray<OnUpdateKeys>
   >,
@@ -142,6 +142,10 @@ const treeProps = {
     default: true
   },
   expandOnClick: Boolean,
+  checkOnClick: {
+    type: [Boolean, Function] as PropType<CheckOnClick>,
+    default: true
+  },
   cancelable: {
     type: Boolean,
     default: true
@@ -195,6 +199,7 @@ const treeProps = {
   renderLabel: Function as PropType<RenderLabel>,
   renderPrefix: Function as PropType<RenderPrefix>,
   renderSuffix: Function as PropType<RenderSuffix>,
+  renderSwitcherIcon: Function as PropType<RenderSwitcherIcon>,
   nodeProps: Function as PropType<TreeNodeProps>,
   onDragenter: [Function, Array] as PropType<
   MaybeArray<(e: TreeDragInfo) => void>
@@ -1249,6 +1254,7 @@ export default defineComponent({
       blockLineRef: toRef(props, 'blockLine'),
       indentRef: toRef(props, 'indent'),
       cascadeRef: toRef(props, 'cascade'),
+      checkOnClickRef: toRef(props, 'checkOnClick'),
       checkboxPlacementRef: props.checkboxPlacement,
       droppingMouseNodeRef,
       droppingNodeParentRef,
