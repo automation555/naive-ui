@@ -15,10 +15,6 @@ import {
   InputHTMLAttributes
 } from 'vue'
 import { VOverflow, VOverflowInst } from 'vueuc'
-import type {
-  RenderLabel,
-  RenderLabelImpl
-} from '../../select-menu/src/interface'
 import type { SelectBaseOption } from '../../../select/src/interface'
 import type { FormValidationStatus } from '../../../form/src/interface'
 import type { TagRef } from '../../../tag/src/Tag'
@@ -26,18 +22,16 @@ import { NPopover } from '../../../popover'
 import { NTag } from '../../../tag'
 import { useThemeClass, useTheme } from '../../../_mixins'
 import type { ThemeProps } from '../../../_mixins'
-import {
-  createKey,
-  getTitleAttribute,
-  render,
-  useOnResize,
-  Wrapper
-} from '../../../_utils'
+import { createKey, getTitleAttribute, render } from '../../../_utils'
 import Suffix from '../../suffix'
 import { internalSelectionLight } from '../styles'
 import type { InternalSelectionTheme } from '../styles'
 import type { RenderTag } from './interface'
 import style from './styles/index.cssr'
+import type {
+  RenderLabel,
+  RenderLabelImpl
+} from '../../select-menu/src/interface'
 
 export interface InternalSelectionInst {
   isCompositing: boolean
@@ -73,17 +67,12 @@ export default defineComponent({
       type: Array as PropType<SelectBaseOption[] | null>,
       default: null
     },
-    labelField: { type: String, default: 'label' },
-    valueField: {
-      type: String,
-      default: 'value'
-    },
     multiple: Boolean,
     filterable: Boolean,
     clearable: Boolean,
     disabled: Boolean,
     size: {
-      type: String as PropType<'tiny' | 'small' | 'medium' | 'large'>,
+      type: String as PropType<'small' | 'medium' | 'large'>,
       default: 'medium'
     },
     loading: Boolean,
@@ -95,6 +84,7 @@ export default defineComponent({
     inputProps: Object as PropType<InputHTMLAttributes>,
     focused: Boolean,
     renderTag: Function as PropType<RenderTag>,
+    onKeyup: Function as PropType<(e: KeyboardEvent) => void>,
     onKeydown: Function as PropType<(e: KeyboardEvent) => void>,
     onClick: Function as PropType<(e: MouseEvent) => void>,
     onBlur: Function as PropType<(e: FocusEvent) => void>,
@@ -107,8 +97,7 @@ export default defineComponent({
     onPatternBlur: Function as PropType<(e: FocusEvent) => void>,
     renderLabel: Function as PropType<RenderLabel>,
     status: String as PropType<FormValidationStatus>,
-    inlineThemeDisabled: Boolean,
-    onResize: Function as PropType<() => void>
+    inlineThemeDisabled: Boolean
   },
   setup (props) {
     const patternInputMirrorRef = ref<HTMLElement | null>(null)
@@ -147,17 +136,13 @@ export default defineComponent({
           })
           : props.renderLabel
             ? props.renderLabel(props.selectedOption as never, true)
-            : render(
-              props.selectedOption[props.labelField],
-              props.selectedOption,
-              true
-            )
+            : render(props.selectedOption.label, props.selectedOption, true)
         : props.placeholder
     })
     const labelRef = computed(() => {
       const option = props.selectedOption
       if (!option) return undefined
-      return option[props.labelField]
+      return option.label
     })
     const selectedRef = computed(() => {
       if (props.multiple) {
@@ -186,7 +171,10 @@ export default defineComponent({
     }
     function showInputTag (): void {
       const { value: inputTagEl } = inputTagElRef
-      if (inputTagEl) inputTagEl.style.display = 'inline-block'
+      if (inputTagEl) {
+        inputTagEl.style.display = 'inline-block'
+        inputTagEl.focus()
+      }
     }
     watch(toRef(props, 'active'), (value) => {
       if (!value) hideInputTag()
@@ -197,11 +185,13 @@ export default defineComponent({
       }
     })
     function doFocus (e: FocusEvent): void {
-      const { onFocus } = props
+      const { onFocus, filterable } = props
+      if (filterable) showInputTag()
       if (onFocus) onFocus(e)
     }
     function doBlur (e: FocusEvent): void {
-      const { onBlur } = props
+      const { onBlur, filterable } = props
+      if (filterable) hideInputTag()
       if (onBlur) onBlur(e)
     }
     function doDeleteOption (value: SelectBaseOption): void {
@@ -246,7 +236,7 @@ export default defineComponent({
       doDeleteOption(option)
     }
     function handlePatternKeyDown (e: KeyboardEvent): void {
-      if (e.key === 'Backspace' && !isCompositingRef.value) {
+      if (e.code === 'Backspace' && !isCompositingRef.value) {
         if (!props.pattern.length) {
           const { selectedOptions } = props
           if (selectedOptions?.length) {
@@ -366,7 +356,6 @@ export default defineComponent({
           props.disabled || patternInputFocusedRef.value ? -1 : 0
       })
     })
-    useOnResize(selfRef, props.onResize)
     const { inlineThemeDisabled } = props
     const cssVarsRef = computed(() => {
       const { size } = props
@@ -423,7 +412,6 @@ export default defineComponent({
           [createKey('fontSize', size)]: fontSize
         }
       } = themeRef.value
-
       return {
         '--n-bezier': cubicBezierEaseInOut,
         '--n-border': border,
@@ -554,27 +542,20 @@ export default defineComponent({
     const maxTagCountNumeric = typeof maxTagCount === 'number'
     const useMaxTagCount = maxTagCountResponsive || maxTagCountNumeric
     const suffix = (
-      <Wrapper>
+      <Suffix
+        clsPrefix={clsPrefix}
+        loading={this.loading}
+        showArrow={this.showArrow}
+        showClear={this.mergedClearable && this.selected}
+        onClear={this.handleClear}
+      >
         {{
-          default: () => (
-            <Suffix
-              clsPrefix={clsPrefix}
-              loading={this.loading}
-              showArrow={this.showArrow}
-              showClear={this.mergedClearable && this.selected}
-              onClear={this.handleClear}
-            >
-              {{
-                default: () => this.$slots.arrow?.()
-              }}
-            </Suffix>
-          )
+          default: () => this.$slots.arrow?.()
         }}
-      </Wrapper>
+      </Suffix>
     )
     let body: JSX.Element
     if (multiple) {
-      const { labelField } = this
       const createTag = (option: SelectBaseOption): JSX.Element => (
         <div
           class={`${clsPrefix}-base-selection-tag-wrapper`}
@@ -590,15 +571,14 @@ export default defineComponent({
               size={size}
               closable={!option.disabled}
               disabled={disabled}
-              onClose={() => this.handleDeleteOption(option)}
-              internalCloseFocusable={false}
               internalStopClickPropagation
+              onClose={() => this.handleDeleteOption(option)}
             >
               {{
                 default: () =>
                   renderLabel
                     ? renderLabel(option, true)
-                    : render(option[labelField], option, true)
+                    : render(option.label, option, true)
               }}
             </NTag>
           )}
@@ -618,7 +598,7 @@ export default defineComponent({
           <input
             {...this.inputProps}
             ref="patternInputRef"
-            tabindex={-1}
+            tabindex={0}
             disabled={disabled}
             value={this.pattern}
             autofocus={this.autofocus}
@@ -752,44 +732,60 @@ export default defineComponent({
           {this.placeholder}
         </div>
       ) : null
-      const popoverTrigger = filterable ? (
-        <div
-          ref="patternInputWrapperRef"
-          class={`${clsPrefix}-base-selection-tags`}
-        >
-          {tags}
-          {maxTagCountResponsive ? null : input}
-          {suffix}
-        </div>
-      ) : (
-        <div
-          ref="multipleElRef"
-          class={`${clsPrefix}-base-selection-tags`}
-          tabindex={disabled ? undefined : 0}
-        >
-          {tags}
-          {suffix}
-        </div>
-      )
-      body = (
-        <>
-          {useMaxTagCount ? (
-            <NPopover
-              {...popoverProps}
-              scrollable
-              style="max-height: calc(var(--v-target-height) * 6.6);"
-            >
-              {{
-                trigger: () => popoverTrigger,
-                default: renderPopover
-              }}
-            </NPopover>
-          ) : (
-            popoverTrigger
-          )}
-          {placeholder}
-        </>
-      )
+      if (filterable) {
+        const popoverTrigger = (
+          <div
+            ref="patternInputWrapperRef"
+            class={`${clsPrefix}-base-selection-tags`}
+            onFocus={this.focusInput}
+          >
+            {tags}
+            {maxTagCountResponsive ? null : input}
+            {suffix}
+          </div>
+        )
+        body = (
+          <>
+            {useMaxTagCount ? (
+              <NPopover {...popoverProps}>
+                {{
+                  trigger: () => popoverTrigger,
+                  default: renderPopover
+                }}
+              </NPopover>
+            ) : (
+              popoverTrigger
+            )}
+            {placeholder}
+          </>
+        )
+      } else {
+        const popoverTrigger = (
+          <div
+            ref="multipleElRef"
+            class={`${clsPrefix}-base-selection-tags`}
+            tabindex={disabled ? undefined : 0}
+          >
+            {tags}
+            {suffix}
+          </div>
+        )
+        body = (
+          <>
+            {useMaxTagCount ? (
+              <NPopover {...popoverProps}>
+                {{
+                  trigger: () => popoverTrigger,
+                  default: renderPopover
+                }}
+              </NPopover>
+            ) : (
+              popoverTrigger
+            )}
+            {placeholder}
+          </>
+        )
+      }
     } else {
       if (filterable) {
         const hasInput = this.pattern || this.isCompositing
@@ -799,6 +795,7 @@ export default defineComponent({
           <div
             ref="patternInputWrapperRef"
             class={`${clsPrefix}-base-selection-label`}
+            onFocus={this.focusInput}
           >
             <input
               {...this.inputProps}
@@ -808,7 +805,7 @@ export default defineComponent({
               placeholder=""
               readonly={disabled}
               disabled={disabled}
-              tabindex={-1}
+              tabindex={0}
               autofocus={this.autofocus}
               onFocus={this.handlePatternInputFocus}
               onBlur={this.handlePatternInputBlur}
@@ -899,13 +896,15 @@ export default defineComponent({
             // focus is not controlled by selection itself since it always need
             // to be managed together with menu. provide :focus style will cause
             // many redundant codes.
-            [`${clsPrefix}-base-selection--focus`]: this.focused
+            [`${clsPrefix}-base-selection--focus`]:
+              this.focused || this.patternInputFocused
           }
         ]}
         style={this.cssVars as CSSProperties}
         onClick={this.onClick}
         onMouseenter={this.handleMouseEnter}
         onMouseleave={this.handleMouseLeave}
+        onKeyup={this.onKeyup}
         onKeydown={this.onKeydown}
         onFocusin={this.handleFocusin}
         onFocusout={this.handleFocusout}
