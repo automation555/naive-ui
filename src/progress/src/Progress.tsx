@@ -1,5 +1,5 @@
 import { h, computed, defineComponent, PropType, CSSProperties } from 'vue'
-import { useConfig, useTheme, useThemeClass } from '../../_mixins'
+import { useConfig, useTheme } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
 import { createKey, ExtractPublicPropTypes } from '../../_utils'
 import { progressLight } from '../styles'
@@ -14,13 +14,9 @@ const progressProps = {
   ...(useTheme.props as ThemeProps<ProgressTheme>),
   processing: Boolean,
   type: {
-    type: String as PropType<
-    'line' | 'circle' | 'multiple-circle' | 'dashboard'
-    >,
+    type: String as PropType<'line' | 'circle' | 'multiple-circle'>,
     default: 'line'
   },
-  gapDegree: Number,
-  gapOffsetDegree: Number,
   status: {
     type: String as PropType<Status>,
     default: 'default'
@@ -62,8 +58,7 @@ const progressProps = {
   },
   height: Number,
   borderRadius: [String, Number] as PropType<string | number>,
-  fillBorderRadius: [String, Number] as PropType<string | number>,
-  offsetDegree: Number
+  fillBorderRadius: [String, Number] as PropType<string | number>
 } as const
 
 export type ProgressProps = ExtractPublicPropTypes<typeof progressProps>
@@ -75,76 +70,55 @@ export default defineComponent({
     const mergedIndicatorPlacementRef = computed(() => {
       return props.indicatorPlacement || props.indicatorPosition
     })
-    const gapDeg = computed(() => {
-      if (props.gapDegree || props.gapDegree === 0) {
-        return props.gapDegree
-      }
-      if (props.type === 'dashboard') {
-        return 75
-      }
-      return undefined
-    })
-    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props)
+    const { mergedClsPrefixRef } = useConfig(props)
     const themeRef = useTheme(
       'Progress',
-      '-progress',
+      'Progress',
       style,
       progressLight,
       props,
       mergedClsPrefixRef
     )
-    const cssVarsRef = computed(() => {
-      const { status } = props
-      const {
-        common: { cubicBezierEaseInOut },
-        self: {
-          fontSize,
-          fontSizeCircle,
-          railColor,
-          railHeight,
-          iconSizeCircle,
-          iconSizeLine,
-          textColorCircle,
-          textColorLineInner,
-          textColorLineOuter,
-          lineBgProcessing,
-          fontWeightCircle,
-          [createKey('iconColor', status)]: iconColor,
-          [createKey('fillColor', status)]: fillColor
-        }
-      } = themeRef.value
-      return {
-        '--n-bezier': cubicBezierEaseInOut,
-        '--n-fill-color': fillColor,
-        '--n-font-size': fontSize,
-        '--n-font-size-circle': fontSizeCircle,
-        '--n-font-weight-circle': fontWeightCircle,
-        '--n-icon-color': iconColor,
-        '--n-icon-size-circle': iconSizeCircle,
-        '--n-icon-size-line': iconSizeLine,
-        '--n-line-bg-processing': lineBgProcessing,
-        '--n-rail-color': railColor,
-        '--n-rail-height': railHeight,
-        '--n-text-color-circle': textColorCircle,
-        '--n-text-color-line-inner': textColorLineInner,
-        '--n-text-color-line-outer': textColorLineOuter
-      }
-    })
-    const themeClassHandle = inlineThemeDisabled
-      ? useThemeClass(
-        'progress',
-        computed(() => props.status[0]),
-        cssVarsRef,
-        props
-      )
-      : undefined
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       mergedIndicatorPlacement: mergedIndicatorPlacementRef,
-      gapDeg,
-      cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
-      themeClass: themeClassHandle?.themeClass,
-      onRender: themeClassHandle?.onRender
+      cssVars: computed(() => {
+        const { status } = props
+        const {
+          common: { cubicBezierEaseInOut },
+          self: {
+            fontSize,
+            fontSizeCircle,
+            railColor,
+            railHeight,
+            iconSizeCircle,
+            iconSizeLine,
+            textColorCircle,
+            textColorLineInner,
+            textColorLineOuter,
+            lineBgProcessing,
+            fontWeightCircle,
+            [createKey('iconColor', status)]: iconColor,
+            [createKey('fillColor', status)]: fillColor
+          }
+        } = themeRef.value
+        return {
+          '--bezier': cubicBezierEaseInOut,
+          '--fill-color': fillColor,
+          '--font-size': fontSize,
+          '--font-size-circle': fontSizeCircle,
+          '--font-weight-circle': fontWeightCircle,
+          '--icon-color': iconColor,
+          '--icon-size-circle': iconSizeCircle,
+          '--icon-size-line': iconSizeLine,
+          '--line-bg-processing': lineBgProcessing,
+          '--rail-color': railColor,
+          '--rail-height': railHeight,
+          '--text-color-circle': textColorCircle,
+          '--text-color-line-inner': textColorLineInner,
+          '--text-color-line-outer': textColorLineOuter
+        }
+      })
     }
   },
   render () {
@@ -169,17 +143,11 @@ export default defineComponent({
       processing,
       circleGap,
       mergedClsPrefix,
-      gapDeg,
-      gapOffsetDegree,
-      themeClass,
-      $slots,
-      onRender
+      $slots
     } = this
-    onRender?.()
     return (
       <div
         class={[
-          themeClass,
           `${mergedClsPrefix}-progress`,
           `${mergedClsPrefix}-progress--${type}`,
           `${mergedClsPrefix}-progress--${status}`
@@ -188,13 +156,9 @@ export default defineComponent({
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={percentage as number}
-        role={
-          type === 'circle' || type === 'line' || type === 'dashboard'
-            ? 'progressbar'
-            : 'none'
-        }
+        role={type === 'circle' || type === 'line' ? 'progressbar' : 'none'}
       >
-        {type === 'circle' || type === 'dashboard' ? (
+        {type === 'circle' ? (
           <Circle
             clsPrefix={mergedClsPrefix}
             status={status}
@@ -203,14 +167,10 @@ export default defineComponent({
             railColor={railColor as any}
             fillColor={color as any}
             railStyle={railStyle as any}
-            offsetDegree={this.offsetDegree}
             percentage={percentage as number}
+            processing={processing}
             viewBoxWidth={viewBoxWidth}
             strokeWidth={strokeWidth}
-            gapDegree={
-              gapDeg === undefined ? (type === 'dashboard' ? 75 : 0) : gapDeg
-            }
-            gapOffsetDegree={gapOffsetDegree}
             unit={unit}
           >
             {$slots}
@@ -243,6 +203,7 @@ export default defineComponent({
             railStyle={railStyle as any}
             viewBoxWidth={viewBoxWidth}
             percentage={percentage as number[]}
+            processing={processing}
             showIndicator={showIndicator}
             circleGap={circleGap}
           >
